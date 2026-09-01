@@ -8,8 +8,18 @@
  *   the visitor isn't signed in yet (dismissible, never blocks play).
  * - A "Connexion" / "Se déconnecter" row injected into the hamburger menu
  *   (the ☰ side panel), replacing the old floating chip.
+ * - The desktop/wide-viewport stylesheet, added at runtime (not in the SSR'd
+ *   <head>) so React's own stylesheet management never fights over it.
  */
 (function () {
+  if (!document.getElementById("gl-desktop-css")) {
+    var link = document.createElement("link");
+    link.id = "gl-desktop-css";
+    link.rel = "stylesheet";
+    link.href = "/desktop.css";
+    document.head.appendChild(link);
+  }
+
   var WELCOME_SEEN_KEY = "gl-welcome-seen";
   var statusCache = null;
   var statusFetchedAt = 0;
@@ -118,12 +128,19 @@
 
   // ---- Menu row: "Connexion" / "Se déconnecter" -----------------------------
 
-  function makeRow(label, id) {
+  var ICON_LOGIN =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>';
+  var ICON_LOGOUT =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>';
+  var ICON_ADMIN =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>';
+
+  function makeRow(label, id, iconSvg) {
     var btn = document.createElement("button");
     btn.type = "button";
     if (id) btn.id = id;
     btn.className = "side-row";
-    btn.textContent = label;
+    btn.innerHTML = iconSvg + "<span>" + label + "</span>";
     return btn;
   }
 
@@ -132,14 +149,18 @@
     var status = await getStatus();
 
     if (status.isAdmin) {
-      var adminRow = makeRow("Administration des cartes", "gl-admin-row");
+      var adminRow = makeRow("Administration des cartes", "gl-admin-row", ICON_ADMIN);
       adminRow.onclick = function () {
         window.location.href = "/admin.html";
       };
       foot.appendChild(adminRow);
     }
 
-    var authRow = makeRow(status.signedIn ? "Se déconnecter" : "Connexion", "gl-auth-row");
+    var authRow = makeRow(
+      status.signedIn ? "Se déconnecter" : "Connexion",
+      "gl-auth-row",
+      status.signedIn ? ICON_LOGOUT : ICON_LOGIN,
+    );
     authRow.onclick = function () {
       if (status.signedIn) void signOut();
       else window.location.href = "/login.html";

@@ -1,0 +1,66 @@
+/**
+ * Desktop / wide-viewport presentation for the live game.
+ *
+ * The game is a mobile-first single column app (max-w-lg / 32rem). On phones
+ * and small tablets it already works perfectly — everything in this file is
+ * gated behind a min-width query well above any phone/portrait-tablet size,
+ * so that experience is completely untouched. On wider viewports (laptop/
+ * desktop, or a landscape tablet), it frames the same app as a centered
+ * "device" card on a decorative backdrop instead of stretching a single
+ * narrow column across a huge window, and keeps every full-viewport overlay
+ * (menu drawer, dialogs, versus intro, fullscreen combat, card zoom, pack
+ * opening) aligned with that frame instead of the raw browser window.
+ *
+ * This file only adds CSS — it never touches the compiled game bundle.
+ */
+@media (min-width: 900px) {
+  :root {
+    --gl-frame-w: 30rem;
+  }
+
+  html,
+  body {
+    background:
+      radial-gradient(60% 45% at 50% 0%, #c9a2271f, transparent 60%),
+      radial-gradient(70% 55% at 50% 100%, #c9a22712, transparent 60%),
+      linear-gradient(#0b1018 0%, #070b14 100%);
+  }
+
+  /* The app's own root shell — float it as a framed card instead of
+     stretching edge-to-edge. */
+  body > div.mx-auto.max-w-lg {
+    max-width: var(--gl-frame-w) !important;
+    height: min(100dvh, 920px) !important;
+    margin: max(1.4rem, 2dvh) auto !important;
+    border-radius: 22px;
+    border: 1px solid #f3eee426;
+    box-shadow: 0 30px 80px #000a, 0 0 0 1px #00000080;
+  }
+
+  /* Full-viewport overlays anchored to the raw browser window (position:
+     fixed) — keep them aligned with the framed app above instead. Overlays
+     that are position:absolute (mulligan, coin flip, settings sheet, the
+     collection/deck-builder sheets) already resolve against an ancestor
+     inside the frame, so they need no change. */
+  .side-root,
+  .buy-ask,
+  .vs-root,
+  .fight-fs,
+  .zoom-root,
+  .pack-stage {
+    left: 50% !important;
+    right: auto !important;
+    width: min(94vw, var(--gl-frame-w)) !important;
+    max-width: var(--gl-frame-w) !important;
+    transform: translateX(-50%);
+  }
+
+  /* Mouse hover affordances (no-op on touch devices). */
+  @media (hover: hover) {
+    .app-dock a:hover,
+    .side-row:hover,
+    button:not(:disabled):hover {
+      opacity: 0.88;
+    }
+  }
+}
