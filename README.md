@@ -51,7 +51,6 @@ private auth broker only available inside the Grok App Builder sandbox. Email
 | `src/lib/db.ts` | Postgres (Neon) / PGLite dual-mode database client |
 | `migrations/` | SQL schema, applied automatically on build/startup |
 | `public/data/catalog.json` | The static base card catalog (admin edits layer on top of this) |
-| `site/`, `dist/` | Legacy pre-built static snapshot — unused by `npm run dev` / `npm run build` now |
 
 ## Tests
 
