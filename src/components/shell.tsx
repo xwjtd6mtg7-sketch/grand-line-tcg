@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, Home, Menu, ShoppingBag, Users } from "lucide-react";
+import { BookOpen, Home, Menu, Swords, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandLockup } from "@/components/brand";
 import { Home as HomePage } from "@/routes/index";
@@ -19,7 +19,7 @@ import { WalletChips } from "@/components/wallet";
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
   { to: "/collection", label: "Collection", icon: BookOpen },
-  { to: "/shop", label: "Boutique", icon: ShoppingBag },
+  { to: "/play", label: "Combat", icon: Swords },
 ] as const;
 
 export function Shell({ children: _children }: { children: React.ReactNode }) {
@@ -103,8 +103,9 @@ export function Shell({ children: _children }: { children: React.ReactNode }) {
                   to={item.to}
                   preload="intent"
                   onClick={() => {
-                    const k = item.to === "/" ? "home" : item.to === "/collection" ? "coll" : "shop";
-                    if (!active) bump(k);
+                    if (!active && (item.to === "/" || item.to === "/collection")) {
+                      bump(item.to === "/" ? "home" : "coll");
+                    }
                     window.dispatchEvent(new CustomEvent("gl-tab", { detail: item.to }));
                   }}
                   className={cn(
