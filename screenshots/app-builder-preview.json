@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Grand Line TCG",
+      "hasCanvas": false,
+      "bodyTextLen": 345,
+      "bodyTextHash": "d76baf8323e1f0a4377e977c5d3de0c7ba838b2fa273dcb7f516cf2d7120cfc2",
+      "bodyTextPrefix": "GRAND LINE TCG UNOFFICIAL TCG 900 B BP 0/5 DUEL Glisse tes carte",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Grand Line TCG",
+      "hasCanvas": false,
+      "bodyTextLen": 345,
+      "bodyTextHash": "d76baf8323e1f0a4377e977c5d3de0c7ba838b2fa273dcb7f516cf2d7120cfc2",
+      "bodyTextPrefix": "GRAND LINE TCG UNOFFICIAL TCG 900 B BP 0/5 DUEL Glisse tes carte",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
