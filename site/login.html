@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Connexion — Grand Line TCG</title>
+<link rel="icon" href="/favicon.svg" />
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+    font-family:Figtree,ui-sans-serif,system-ui,sans-serif;color:#f3eee4;
+    background:linear-gradient(#121820 0%,#0b1018 55%,#070b14 100%);padding:1.2rem}
+  .card{width:100%;max-width:380px;border:1px solid #f3eee438;border-radius:26px;
+    padding:1.4rem 1.2rem 1.6rem;background:linear-gradient(#1a2130,#121820);
+    box-shadow:0 18px 40px #0007}
+  h1{font-family:Cinzel,serif;font-size:1.05rem;letter-spacing:.06em;margin:0 0 1.1rem;
+    text-align:center;color:#c9a227}
+  .tabs{display:flex;gap:6px;margin-bottom:1.1rem;border-bottom:1px solid #f3eee41f}
+  .tab{flex:1;padding:.6rem .4rem;background:none;border:0;border-bottom:2px solid transparent;
+    color:#6b7380;font:600 13px inherit;letter-spacing:.03em;cursor:pointer}
+  .tab.on{color:#c9a227;border-bottom-color:#c9a227}
+  label{display:flex;flex-direction:column;gap:.35rem;font-size:.78rem;color:#9aa3b2;margin-bottom:.8rem}
+  input{height:2.7rem;padding:0 .8rem;border-radius:12px;border:1px solid #f3eee438;
+    background:#101828;color:#f3eee4;font-size:.92rem;outline:none}
+  input:focus{border-color:#c9a227}
+  button.submit{width:100%;height:3rem;border:0;border-radius:12px;background:#c9a227;
+    color:#0a101c;font:700 .95rem inherit;letter-spacing:.02em;cursor:pointer;margin-top:.3rem}
+  button.submit:disabled{opacity:.5;cursor:wait}
+  .err{margin:0 0 .8rem;font-size:.82rem;color:#fff5f5;background:#c81e1e4d;
+    border:1px solid #c81e1e80;border-radius:8px;padding:.5rem .7rem}
+  .swap{margin:1rem 0 0;text-align:center;font-size:.82rem;color:#6b7380}
+  .swap button{background:none;border:0;padding:0;color:#c9a227;font-weight:600;cursor:pointer;
+    text-decoration:underline}
+  a.back{display:block;text-align:center;margin-top:1rem;font-size:.78rem;color:#6b7380;text-decoration:none}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>GRAND LINE TCG</h1>
+    <div class="tabs">
+      <button type="button" class="tab on" id="tab-signin">Connexion</button>
+      <button type="button" class="tab" id="tab-signup">Créer un compte</button>
+    </div>
+    <form id="form">
+      <label id="field-name" style="display:none">
+        <span>Pseudo</span>
+        <input id="name" autocomplete="nickname" placeholder="Roronoa" />
+      </label>
+      <label>
+        <span>Email</span>
+        <input id="email" type="email" required autocomplete="email" placeholder="toi@exemple.com" />
+      </label>
+      <label>
+        <span>Mot de passe</span>
+        <input id="password" type="password" required autocomplete="current-password" placeholder="••••••••" />
+      </label>
+      <p class="err" id="err" hidden></p>
+      <button type="submit" class="submit" id="submit">Se connecter</button>
+    </form>
+    <p class="swap" id="swap">
+      Pas encore de compte ? <button type="button" id="swap-btn">En créer un</button>
+    </p>
+    <a class="back" href="/">← Retour au jeu</a>
+  </div>
+  <script>
+    let mode = "signin";
+    const $ = (id) => document.getElementById(id);
+
+    function bindSwap() {
+      document.getElementById("swap-btn").onclick = () => setMode(mode === "signup" ? "signin" : "signup");
+    }
+
+    function setMode(next) {
+      mode = next;
+      $("tab-signin").classList.toggle("on", mode === "signin");
+      $("tab-signup").classList.toggle("on", mode === "signup");
+      $("field-name").style.display = mode === "signup" ? "flex" : "none";
+      $("password").autocomplete = mode === "signup" ? "new-password" : "current-password";
+      $("submit").textContent = mode === "signup" ? "Créer mon compte" : "Se connecter";
+      $("swap").innerHTML =
+        mode === "signup"
+          ? 'Déjà un compte ? <button type="button" id="swap-btn">Se connecter</button>'
+          : 'Pas encore de compte ? <button type="button" id="swap-btn">En créer un</button>';
+      bindSwap();
+      $("err").hidden = true;
+    }
+    $("tab-signin").onclick = () => setMode("signin");
+    $("tab-signup").onclick = () => setMode("signup");
+    bindSwap();
+
+    $("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = $("submit");
+      const err = $("err");
+      err.hidden = true;
+      const email = $("email").value.trim();
+      const password = $("password").value;
+      const name = $("name").value.trim();
+      if (!email || !password) {
+        err.textContent = "Renseigne ton email et ton mot de passe.";
+        err.hidden = false;
+        return;
+      }
+      if (mode === "signup" && password.length < 8) {
+        err.textContent = "Le mot de passe doit contenir au moins 8 caractères.";
+        err.hidden = false;
+        return;
+      }
+      btn.disabled = true;
+      try {
+        const path = mode === "signup" ? "/api/auth/sign-up/email" : "/api/auth/sign-in/email";
+        const body =
+          mode === "signup"
+            ? { email, password, name: name || email.split("@")[0] }
+            : { email, password };
+        const r = await fetch(path, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(body),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data?.message || "Email ou mot de passe incorrect.");
+        window.location.href = "/";
+      } catch (ex) {
+        err.textContent = ex.message || "Une erreur est survenue.";
+        err.hidden = false;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

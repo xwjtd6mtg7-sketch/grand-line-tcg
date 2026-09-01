@@ -62,6 +62,46 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Admin-added/edited/removed cards, merged over the static catalog on the
+  // fly — the game's own compiled JS never changes. Any failure here falls
+  // back to the exact behavior below (cache-first static file), so this can
+  // never make the catalog worse than before.
+  if (url.pathname === "/data/catalog.json") {
+    event.respondWith(
+      (async () => {
+        try {
+          const [baseRes, overridesRes] = await Promise.all([
+            fetch(req),
+            fetch("/api/card-overrides").catch(() => null),
+          ]);
+          if (!baseRes || !baseRes.ok) throw new Error("base catalog fetch failed");
+          caches.open(ASSETS).then((c) => c.put(req, baseRes.clone()).catch(() => undefined));
+          if (!overridesRes || !overridesRes.ok) return baseRes;
+          const overrides = await overridesRes.json();
+          if (!Array.isArray(overrides) || !overrides.length) return baseRes;
+          const base = await baseRes.clone().json();
+          const byId = new Map(base.cards.map((c) => [c.id, c]));
+          for (const o of overrides) {
+            if (o.action === "delete") byId.delete(o.id);
+            else if (o.card) byId.set(o.id, o.card);
+          }
+          base.cards = Array.from(byId.values());
+          return new Response(JSON.stringify(base), {
+            headers: { "content-type": "application/json; charset=utf-8" },
+          });
+        } catch {
+          const cache = await caches.open(ASSETS);
+          return (
+            (await cache.match(req)) ||
+            (await cache.match(new URL(req.url).pathname)) ||
+            fetch(req).catch(() => Response.error())
+          );
+        }
+      })(),
+    );
+    return;
+  }
+
   if (isAsset(url) || url.pathname.startsWith("/data/")) {
     event.respondWith(
       caches.open(ASSETS).then(async (cache) => {

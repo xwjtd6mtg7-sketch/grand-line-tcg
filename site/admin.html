@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Administration des cartes — Grand Line TCG</title>
+<link rel="icon" href="/favicon.svg" />
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100dvh;font-family:Figtree,ui-sans-serif,system-ui,sans-serif;
+    color:#f3eee4;background:linear-gradient(#121820 0%,#0b1018 55%,#070b14 100%)}
+  .wrap{max-width:640px;margin:0 auto;padding:1.2rem 1rem 3rem}
+  header{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:1rem}
+  h1{font-family:Cinzel,serif;font-size:1.1rem;letter-spacing:.03em;color:#c9a227;margin:0}
+  a.back{font-size:.78rem;color:#6b7380;text-decoration:none}
+  button{font-family:inherit;cursor:pointer}
+  .btn{height:2.4rem;padding:0 .9rem;border-radius:10px;border:0;background:#c9a227;
+    color:#0a101c;font-weight:700;font-size:.85rem}
+  .search{display:flex;align-items:center;gap:.5rem;height:2.6rem;padding:0 .8rem;margin-bottom:.6rem;
+    border:1px solid #f3eee438;border-radius:12px;background:#101828;color:#6b7380}
+  .search input{flex:1;background:none;border:0;outline:none;color:#f3eee4;font-size:.9rem}
+  .status{margin:0 0 .6rem;font-size:.82rem;color:#3d9a6a}
+  .count{margin:0 0 .6rem;font-size:.76rem;color:#6b7380}
+  ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.45rem}
+  li{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.65rem .8rem;
+    border:1px solid #f3eee41f;border-radius:12px;background:#172033}
+  .row-main{display:flex;flex-direction:column;gap:.15rem;min-width:0}
+  .row-name{font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row-meta{font-size:.72rem;color:#6b7380}
+  .row-actions{display:flex;gap:.3rem;flex-shrink:0}
+  .row-actions button{width:2.1rem;height:2.1rem;border-radius:8px;border:1px solid #f3eee438;
+    background:none;color:#9aa3b2;font-size:.9rem}
+  .row-actions button.danger{color:#f5a3a3}
+  .gate{display:flex;align-items:center;justify-content:center;min-height:100dvh;text-align:center;
+    padding:2rem;color:#9aa3b2}
+  .overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:#05070ccc}
+  .form-card{width:100%;max-width:480px;max-height:92dvh;overflow-y:auto;border-top:1px solid #f3eee438;
+    border-radius:26px 26px 0 0;background:linear-gradient(#1a2130,#121820);padding:1rem 1.1rem 1.6rem}
+  .form-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
+  .form-head h2{margin:0;font-family:Cinzel,serif;font-size:1rem}
+  .form-head button{background:none;border:0;color:#6b7380;font-size:1.3rem}
+  .field{display:flex;flex-direction:column;gap:.35rem;font-size:.78rem;color:#9aa3b2;margin-bottom:.7rem}
+  .field input,.field select,.field textarea{height:2.6rem;padding:0 .8rem;border-radius:10px;
+    border:1px solid #f3eee438;background:#101828;color:#f3eee4;font-size:.9rem;font-family:inherit;outline:none}
+  .field textarea{height:auto;padding:.6rem .8rem;resize:vertical}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+  .chips{display:flex;flex-wrap:wrap;gap:.4rem}
+  .chip{padding:.35rem .7rem;border-radius:999px;border:1px solid #f3eee438;background:#101828;
+    color:#6b7380;font-size:.76rem}
+  .chip.on{border-color:#c9a227;color:#c9a227;background:#c9a22729}
+  .form-foot{display:flex;gap:.6rem;margin-top:1rem}
+  .form-foot button{flex:1;height:2.7rem;border-radius:10px;font-weight:700;font-size:.88rem}
+  .form-foot .cancel{border:1px solid #f3eee438;background:none;color:#f3eee4}
+  .form-foot .save{border:0;background:#c9a227;color:#0a101c}
+  label.check{display:flex;align-items:center;gap:.5rem;font-size:.84rem;color:#9aa3b2}
+</style>
+</head>
+<body>
+  <div id="app" class="gate">Chargement…</div>
+
+  <script>
+    const COLORS = ["Red", "Green", "Blue", "Purple", "Black", "Yellow"];
+    const TYPES = ["Leader", "Character", "Event", "Stage", "DON!!"];
+    const app = document.getElementById("app");
+
+    function blankCard() {
+      return {
+        id: "", name: "", set: "", setName: "", rarity: "C", colors: [], type: "Character",
+        life: null, cost: null, power: null, counter: null, traits: [], attr: null,
+        text: "", textEn: "", image: "", parallel: false, src: "custom",
+      };
+    }
+
+    async function boot() {
+      let status;
+      try {
+        const r = await fetch("/api/admin/status", { credentials: "include" });
+        status = await r.json();
+      } catch {
+        app.textContent = "Impossible de contacter le serveur.";
+        return;
+      }
+      if (!status.signedIn) {
+        app.innerHTML = '<div class="gate">Connecte-toi pour accéder à l\'administration.<br><br><a class="back" href="/login.html">Se connecter →</a></div>';
+        return;
+      }
+      if (!status.isAdmin) {
+        app.innerHTML = '<div class="gate">Accès réservé à l\'administrateur du jeu.</div>';
+        return;
+      }
+      renderEditor();
+    }
+
+    async function fetchCards() {
+      const [baseRes, overridesRes] = await Promise.all([
+        fetch("/data/catalog.json?admin=1"),
+        fetch("/api/card-overrides", { credentials: "include" }),
+      ]);
+      const base = await baseRes.json();
+      const overrides = overridesRes.ok ? await overridesRes.json() : [];
+      const byId = new Map(base.cards.map((c) => [c.id, c]));
+      for (const o of overrides) {
+        if (o.action === "delete") byId.delete(o.id);
+        else if (o.card) byId.set(o.id, o.card);
+      }
+      return Array.from(byId.values());
+    }
+
+    function renderEditor() {
+      app.className = "";
+      app.innerHTML = `
+        <div class="wrap">
+          <header>
+            <h1>Administration des cartes</h1>
+            <button class="btn" id="new-card">+ Nouvelle carte</button>
+          </header>
+          <div class="search"><span>🔍</span><input id="q" placeholder="Rechercher par nom, id ou set…" /></div>
+          <p class="status" id="status" hidden></p>
+          <p class="count" id="count"></p>
+          <ul id="list"></ul>
+        </div>
+      `;
+      let cards = [];
+      let q = "";
+
+      const list = document.getElementById("list");
+      const countEl = document.getElementById("count");
+      const statusEl = document.getElementById("status");
+
+      function showStatus(msg) {
+        statusEl.hidden = false;
+        statusEl.textContent = msg;
+      }
+
+      function renderList() {
+        const query = q.trim().toLowerCase();
+        const filtered = query
+          ? cards.filter(
+              (c) =>
+                c.id.toLowerCase().includes(query) ||
+                c.name.toLowerCase().includes(query) ||
+                c.set.toLowerCase().includes(query),
+            )
+          : cards;
+        const shown = filtered.slice(0, 200);
+        countEl.textContent =
+          cards.length + " carte(s) au total" +
+          (shown.length < filtered.length ? " — 200 affichées, affine ta recherche" : "");
+        list.innerHTML = "";
+        for (const card of shown) {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <div class="row-main">
+              <span class="row-name"></span>
+              <span class="row-meta"></span>
+            </div>
+            <div class="row-actions">
+              <button aria-label="Modifier" data-act="edit">✎</button>
+              <button aria-label="Supprimer" class="danger" data-act="del">🗑</button>
+            </div>
+          `;
+          li.querySelector(".row-name").textContent = card.name;
+          li.querySelector(".row-meta").textContent = `${card.id} · ${card.set} · ${card.rarity} · ${card.type}`;
+          li.querySelector('[data-act="edit"]').onclick = () => openForm(card, false);
+          li.querySelector('[data-act="del"]').onclick = () => removeCard(card);
+          list.appendChild(li);
+        }
+      }
+
+      async function refresh() {
+        cards = await fetchCards();
+        renderList();
+      }
+
+      async function removeCard(card) {
+        if (!window.confirm(`Supprimer « ${card.name} » (${card.id}) du jeu ?`)) return;
+        try {
+          const r = await fetch("/api/admin/cards?id=" + encodeURIComponent(card.id), {
+            method: "DELETE",
+            credentials: "include",
+          });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.error || "Échec de la suppression.");
+          showStatus(`« ${card.name} » supprimée.`);
+          await refresh();
+        } catch (ex) {
+          showStatus(ex.message);
+        }
+      }
+
+      async function saveCard(input) {
+        try {
+          const r = await fetch("/api/admin/cards", {
+            method: "POST",
+            credentials: "include",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.error || "Échec de l'enregistrement.");
+          showStatus(`« ${input.name} » enregistrée.`);
+          document.getElementById("overlay")?.remove();
+          q = input.id;
+          document.getElementById("q").value = q;
+          await refresh();
+        } catch (ex) {
+          showStatus(ex.message);
+        }
+      }
+
+      function openForm(card, isNew) {
+        const form = isNew ? blankCard() : { ...card, textEn: card.textEn ?? "" };
+        const overlay = document.createElement("div");
+        overlay.className = "overlay";
+        overlay.id = "overlay";
+        overlay.innerHTML = `
+          <div class="form-card">
+            <div class="form-head">
+              <h2>${isNew ? "Nouvelle carte" : "Modifier " + card.id}</h2>
+              <button type="button" id="close-form">×</button>
+            </div>
+            <div class="field"><span>Identifiant</span><input id="f-id" placeholder="OP01-999" ${isNew ? "" : "disabled"} /></div>
+            <div class="field"><span>Nom</span><input id="f-name" /></div>
+            <div class="grid2">
+              <div class="field"><span>Set</span><input id="f-set" /></div>
+              <div class="field"><span>Nom du set</span><input id="f-setName" /></div>
+            </div>
+            <div class="grid2">
+              <div class="field"><span>Rareté</span><input id="f-rarity" /></div>
+              <div class="field"><span>Type</span>
+                <select id="f-type">${TYPES.map((t) => `<option value="${t}">${t}</option>`).join("")}</select>
+              </div>
+            </div>
+            <div class="field"><span>Couleurs</span><div class="chips" id="f-colors">
+              ${COLORS.map((c) => `<button type="button" class="chip" data-c="${c}">${c}</button>`).join("")}
+            </div></div>
+            <div class="grid4">
+              <div class="field"><span>Vie</span><input id="f-life" inputmode="numeric" /></div>
+              <div class="field"><span>Coût</span><input id="f-cost" inputmode="numeric" /></div>
+              <div class="field"><span>Puissance</span><input id="f-power" inputmode="numeric" /></div>
+              <div class="field"><span>Contre</span><input id="f-counter" inputmode="numeric" /></div>
+            </div>
+            <div class="field"><span>Traits (séparés par des virgules)</span><input id="f-traits" /></div>
+            <div class="field"><span>Attribut</span><input id="f-attr" /></div>
+            <div class="field"><span>Texte</span><textarea id="f-text" rows="3"></textarea></div>
+            <div class="field"><span>Image (chemin ou URL)</span><input id="f-image" /></div>
+            <label class="check"><input type="checkbox" id="f-parallel" /> Carte parallèle / alternative</label>
+            <div class="form-foot">
+              <button type="button" class="cancel" id="cancel-form">Annuler</button>
+              <button type="button" class="save" id="save-form">Enregistrer</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const $ = (id) => overlay.querySelector(id);
+        $("#f-id").value = form.id;
+        $("#f-name").value = form.name;
+        $("#f-set").value = form.set;
+        $("#f-setName").value = form.setName;
+        $("#f-rarity").value = form.rarity;
+        $("#f-type").value = form.type;
+        $("#f-life").value = form.life ?? "";
+        $("#f-cost").value = form.cost ?? "";
+        $("#f-power").value = form.power ?? "";
+        $("#f-counter").value = form.counter ?? "";
+        $("#f-traits").value = form.traits.join(", ");
+        $("#f-attr").value = form.attr ?? "";
+        $("#f-text").value = form.text;
+        $("#f-image").value = form.image;
+        $("#f-parallel").checked = form.parallel;
+        let colors = new Set(form.colors);
+        overlay.querySelectorAll(".chip").forEach((chip) => {
+          if (colors.has(chip.dataset.c)) chip.classList.add("on");
+          chip.onclick = () => {
+            if (colors.has(chip.dataset.c)) colors.delete(chip.dataset.c);
+            else colors.add(chip.dataset.c);
+            chip.classList.toggle("on");
+          };
+        });
+
+        const num = (v) => {
+          const t = v.trim();
+          if (!t) return null;
+          const n = Number(t);
+          return Number.isFinite(n) ? Math.trunc(n) : null;
+        };
+
+        overlay.querySelector("#close-form").onclick = () => overlay.remove();
+        overlay.querySelector("#cancel-form").onclick = () => overlay.remove();
+        overlay.querySelector("#save-form").onclick = () => {
+          saveCard({
+            id: $("#f-id").value.trim(),
+            name: $("#f-name").value.trim(),
+            set: $("#f-set").value.trim(),
+            setName: $("#f-setName").value.trim(),
+            rarity: $("#f-rarity").value.trim(),
+            colors: Array.from(colors),
+            type: $("#f-type").value,
+            life: num($("#f-life").value),
+            cost: num($("#f-cost").value),
+            power: num($("#f-power").value),
+            counter: num($("#f-counter").value),
+            traits: $("#f-traits").value.split(",").map((s) => s.trim()).filter(Boolean),
+            attr: $("#f-attr").value.trim() || null,
+            text: $("#f-text").value,
+            image: $("#f-image").value.trim(),
+            parallel: $("#f-parallel").checked,
+            src: form.src || "custom",
+          });
+        };
+      }
+
+      document.getElementById("new-card").onclick = () => openForm(blankCard(), true);
+      document.getElementById("q").addEventListener("input", (e) => {
+        q = e.target.value;
+        renderList();
+      });
+
+      refresh();
+    }
+
+    boot();
+  </script>
+</body>
+</html>
