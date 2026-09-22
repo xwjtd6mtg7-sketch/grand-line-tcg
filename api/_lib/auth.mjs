@@ -11,6 +11,9 @@
 import { betterAuth } from "better-auth";
 import { bearer } from "better-auth/plugins";
 import { randomBytes } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { getPglite } from "./db.mjs";
 import { pgliteDialect } from "./pglite-dialect.mjs";
 
@@ -20,11 +23,23 @@ const env = (key) => {
 };
 
 const databaseUrl = env("DATABASE_URL");
+const PUBLIC_HOST = "grand-line-tcg.grok.me";
 
-const globalRef = globalThis;
 function devSecret() {
-  globalRef.__glAuthSecret__ ??= randomBytes(32).toString("hex");
-  return globalRef.__glAuthSecret__;
+  const dir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".grok");
+  const file = join(dir, "auth-secret");
+  try {
+    const existing = readFileSync(file, "utf8").trim();
+    if (existing.length >= 32) return existing;
+  } catch {}
+  const next = randomBytes(32).toString("hex");
+  try {
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(file, next);
+  } catch {
+    // Vercel / read-only FS — keep the in-memory value for this isolate.
+  }
+  return env("GROK_AUTH_CLIENT_SECRET") || next;
 }
 
 async function database() {
@@ -35,14 +50,87 @@ async function database() {
   return { dialect: pgliteDialect(() => getPglite()), type: "postgres" };
 }
 
-const baseURL = env("BETTER_AUTH_URL");
+function resolveBaseURL() {
+  const fromEnv = env("BETTER_AUTH_URL");
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  const vercel = env("VERCEL_URL");
+  if (vercel) {
+    if (env("VERCEL_ENV") === "production") return `https://${PUBLIC_HOST}`;
+    const host = vercel.replace(/^https?:\/\//, "");
+    return `https://${host}`;
+  }
+  return "http://127.0.0.1:8080";
+}
+
+const baseURL = resolveBaseURL();
+const isHttps = baseURL.startsWith("https://") || Boolean(env("VERCEL_URL"));
+
+function hostOf(raw) {
+  try {
+    const u = new URL(raw.startsWith("http") ? raw : `https://${raw}`);
+    return u.hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+function originOf(raw) {
+  try {
+    const u = new URL(raw.startsWith("http") ? raw : `https://${raw}`);
+    return u.origin;
+  } catch {
+    return "";
+  }
+}
+
+function isTrustedHost(host) {
+  if (!host) return false;
+  const h = host.replace(/:\d+$/, "").toLowerCase();
+  return (
+    h === "127.0.0.1" ||
+    h === "localhost" ||
+    h === "0.0.0.0" ||
+    h === PUBLIC_HOST ||
+    h.endsWith(".grok.me") ||
+    h.endsWith(".grok-sandbox.com") ||
+    h.endsWith(".vercel.app")
+  );
+}
 
 export const auth = betterAuth({
   baseURL,
   secret: env("BETTER_AUTH_SECRET") ?? devSecret(),
   database: await database(),
-  trustedOrigins: baseURL ? [baseURL] : undefined,
-  emailAndPassword: { enabled: true },
+  trustedOrigins: (request) => {
+    const out = new Set([
+      baseURL,
+      "http://127.0.0.1:8080",
+      "http://localhost:8080",
+      "http://0.0.0.0:8080",
+      `https://${PUBLIC_HOST}`,
+    ]);
+    if (request?.headers) {
+      const get = (k) => request.headers.get(k);
+      for (const raw of [get("origin"), get("x-forwarded-host"), get("host")]) {
+        if (!raw) continue;
+        const host = hostOf(raw);
+        if (isTrustedHost(host)) {
+          const origin = originOf(raw);
+          if (origin) out.add(origin);
+        }
+      }
+    }
+    return [...out];
+  },
+  emailAndPassword: { enabled: true, autoSignIn: true, minPasswordLength: 8 },
   session: { cookieCache: { enabled: true, maxAge: 300 } },
+  advanced: {
+    useSecureCookies: isHttps,
+    defaultCookieAttributes: {
+      sameSite: "lax",
+      secure: isHttps,
+      path: "/",
+    },
+  },
   plugins: [bearer()],
 });

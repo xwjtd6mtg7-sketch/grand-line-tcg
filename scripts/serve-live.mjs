@@ -47,6 +47,50 @@ function send(res, code, headers, body) {
   res.end(body);
 }
 
+async function loadApi(rel) {
+  const abs = path.join(path.dirname(fileURLToPath(import.meta.url)), rel);
+  const stamp = fs.statSync(abs).mtimeMs;
+  const { default: handler } = await import(rel + "?t=" + stamp);
+  return handler;
+}
+
+async function handleApi(req, res) {
+  const urlPath = (req.url || "/").split("?")[0];
+  try {
+    if (urlPath.startsWith("/api/auth")) {
+      const handler = await loadApi("../api/auth-handler.mjs");
+      await handler(req, res);
+      return;
+    }
+    const map = {
+      "/api/admin/status": "../api/admin/status.mjs",
+      "/api/admin/cards": "../api/admin/cards.mjs",
+      "/api/admin/users": "../api/admin/users.mjs",
+      "/api/card-overrides": "../api/card-overrides.mjs",
+      "/api/catalog": "../api/catalog.mjs",
+      "/api/social": "../api/social.mjs",
+      "/api/versus": "../api/versus.mjs",
+      "/api/progress": "../api/progress.mjs",
+    };
+    const file = map[urlPath];
+    if (!file) {
+      send(res, 404, { "content-type": "application/json; charset=utf-8" }, JSON.stringify({ error: "not_found" }));
+      return;
+    }
+    const handler = await loadApi(file);
+    await handler(req, res);
+  } catch (err) {
+    if (!res.headersSent) {
+      send(
+        res,
+        500,
+        { "content-type": "application/json; charset=utf-8" },
+        JSON.stringify({ error: "internal_error", message: err?.message || String(err) }),
+      );
+    }
+  }
+}
+
 function serveFile(file, res) {
   const ext = path.extname(file).toLowerCase();
   const type = TYPES[ext] || "application/octet-stream";
@@ -54,15 +98,34 @@ function serveFile(file, res) {
   stream.on("error", () => send(res, 500, { "content-type": "text/plain" }, "error"));
   res.writeHead(200, {
     "content-type": type,
-    "cache-control": ext === ".html" || ext === ".js" || ext === ".css" || ext === ".json"
-      ? "public, max-age=0, must-revalidate"
+    "cache-control": ext === ".html" || ext === ".js" || ext === ".css" || ext === ".json" || ext === ".webmanifest"
+      ? "no-store, no-cache, must-revalidate"
       : "public, max-age=86400",
   });
   stream.pipe(res);
 }
 
 const server = http.createServer((req, res) => {
-  const urlPath = req.url || "/";
+  const urlPath = (req.url || "/").split("?")[0];
+  if (urlPath.startsWith("/api/")) {
+    handleApi(req, res);
+    return;
+  }
+  if (urlPath === "/data/catalog.json") {
+    loadApi("../api/catalog.mjs")
+      .then((handler) => handler(req, res))
+      .catch((err) => {
+        if (!res.headersSent) {
+          send(
+            res,
+            500,
+            { "content-type": "application/json; charset=utf-8" },
+            JSON.stringify({ error: "internal_error", message: err?.message || String(err) }),
+          );
+        }
+      });
+    return;
+  }
   if (req.method !== "GET" && req.method !== "HEAD") {
     send(res, 405, { "content-type": "text/plain" }, "method not allowed");
     return;
@@ -85,7 +148,12 @@ const server = http.createServer((req, res) => {
       });
       return;
     }
-    // SPA fallback for client routes
+    // SPA fallback for client routes only — never serve HTML as JS/CSS.
+    const ext = path.extname(urlPath).toLowerCase();
+    if (ext && ext !== ".html") {
+      send(res, 404, { "content-type": "text/plain; charset=utf-8" }, "not found");
+      return;
+    }
     serveFile(path.join(ROOT, "index.html"), res);
   });
 });

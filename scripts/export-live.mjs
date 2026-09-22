@@ -2,6 +2,10 @@
 /**
  * Publish the live game (site/) as dist/.
  * Vercel / any `npm run build` must ship this snapshot — never a Vite rebuild of src/.
+ *
+ * Card art in site/cards-fr (~390MB, 3966 files) is NOT copied: it blows the
+ * deploy size limit. Production serves /cards-fr/* from GitHub via vercel.json
+ * rewrite. Local preview still reads site/cards-fr directly.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -26,6 +30,20 @@ if (!html.includes("Grand Line TCG") || !html.includes("/assets/index-")) {
 const match = html.match(/\/assets\/(index-[A-Za-z0-9_-]+\.js)/);
 const bundle = match ? match[1] : "?";
 
+const skip = new Set(["cards-fr"]);
+
+function include(src) {
+  const rel = path.relative(site, src);
+  if (!rel || rel.startsWith("..")) return true;
+  const top = rel.split(path.sep)[0];
+  return !skip.has(top);
+}
+
 fs.rmSync(dist, { recursive: true, force: true });
-fs.cpSync(site, dist, { recursive: true, dereference: true });
-console.log(`[grand-line-tcg] exported live site/ -> dist/ (${bundle})`);
+fs.cpSync(site, dist, { recursive: true, dereference: true, filter: include });
+fs.mkdirSync(path.join(dist, "cards-fr"), { recursive: true });
+fs.writeFileSync(
+  path.join(dist, "cards-fr", ".keep"),
+  "card art is served from GitHub/jsDelivr in production\n",
+);
+console.log(`[grand-line-tcg] exported live site/ -> dist/ (${bundle}, cards-fr omitted)`);

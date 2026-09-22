@@ -1,43 +1,66 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
+<head><script src="/card-cdn.js?v=1"></script>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Connexion — Grand Line TCG</title>
-<link rel="icon" href="/favicon.svg" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="/portrait.css?v=11" />
 <style>
   :root{color-scheme:dark}
   *{box-sizing:border-box}
-  body{margin:0;min-height:100dvh;display:flex;align-items:center;justify-content:center;
-    font-family:Figtree,ui-sans-serif,system-ui,sans-serif;color:#f3eee4;
-    background:linear-gradient(#121820 0%,#0b1018 55%,#070b14 100%);padding:1.2rem}
-  .card{width:100%;max-width:380px;border:1px solid #f3eee438;border-radius:26px;
-    padding:1.4rem 1.2rem 1.6rem;background:linear-gradient(#1a2130,#121820);
-    box-shadow:0 18px 40px #0007}
-  h1{font-family:Cinzel,serif;font-size:1.05rem;letter-spacing:.06em;margin:0 0 1.1rem;
-    text-align:center;color:#c9a227}
-  .tabs{display:flex;gap:6px;margin-bottom:1.1rem;border-bottom:1px solid #f3eee41f}
-  .tab{flex:1;padding:.6rem .4rem;background:none;border:0;border-bottom:2px solid transparent;
-    color:#6b7380;font:600 13px inherit;letter-spacing:.03em;cursor:pointer}
-  .tab.on{color:#c9a227;border-bottom-color:#c9a227}
-  label{display:flex;flex-direction:column;gap:.35rem;font-size:.78rem;color:#9aa3b2;margin-bottom:.8rem}
-  input{height:2.7rem;padding:0 .8rem;border-radius:12px;border:1px solid #f3eee438;
-    background:#101828;color:#f3eee4;font-size:.92rem;outline:none}
-  input:focus{border-color:#c9a227}
-  button.submit{width:100%;height:3rem;border:0;border-radius:12px;background:#c9a227;
+  body{
+    margin:0;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+    font-family:Figtree,ui-sans-serif,system-ui,sans-serif;color:#f4ead4;
+    background:#070B14;
+    padding:max(1.2rem, env(safe-area-inset-top)) max(1.2rem, env(safe-area-inset-right))
+            max(1.2rem, env(safe-area-inset-bottom)) max(1.2rem, env(safe-area-inset-left))}
+  .card{
+    width:min(100%, 420px);max-width:420px;
+    border:1px solid #c9a22766;border-radius:22px;
+    padding:clamp(1.15rem, 3vw, 1.7rem) clamp(1rem, 3vw, 1.45rem);
+    background:#070B14;
+    box-shadow:0 0 40px #c9a22722,0 18px 40px #0009,inset 0 1px #f4ead422}
+  h1{font-family:Cinzel,serif;font-size:clamp(0.95rem, 2.6vw, 1.15rem);letter-spacing:.08em;margin:0;
+    text-align:center;color:#f4ead4;font-weight:700}
+  .rule{background:linear-gradient(90deg,#0000,#8a7018 12%,#e8d48a 50%,#8a7018 88%,#0000);
+    border-radius:99px;height:2px;margin:10px 8px 16px;box-shadow:0 0 10px #c9a22755}
+  .tab{flex:1;min-height:44px;padding:.6rem .4rem;background:none;border:0;border-bottom:2px solid transparent;
+    color:#8b93a0;font:600 13px inherit;letter-spacing:.03em;cursor:pointer}
+  input{height:2.8rem;min-height:44px;padding:0 .8rem;border-radius:12px;border:1px solid #c9a22744;
+    background:#0b1018;color:#f4ead4;font-size:1rem;outline:none;width:100%}
+  button.submit{width:100%;height:3rem;min-height:44px;border:0;border-radius:12px;background:#c9a227;
     color:#0a101c;font:700 .95rem inherit;letter-spacing:.02em;cursor:pointer;margin-top:.3rem}
+  @media (orientation:landscape) and (max-height:500px){
+    body{align-items:stretch;padding:.6rem 1rem}
+    .card{margin:auto;max-height:100dvh;overflow:auto;padding:0.9rem 1.1rem}
+    h1{margin-bottom:0}
+    .rule{margin:8px 8px 10px}
+  }
+  @media (min-width: 1120px) and (hover: hover) and (pointer: fine){
+    .card{max-width:440px;padding:2rem 1.7rem;border-radius:22px}
+    h1{font-size:1.2rem}
+  }
+  .tabs{display:flex;gap:6px;margin-bottom:1.1rem;border-bottom:1px solid #c9a22733}
+  .tab.on{color:#e8d48a;border-bottom-color:#c9a227}
+  label{display:flex;flex-direction:column;gap:.35rem;font-size:.78rem;color:#c9b58a;margin-bottom:.8rem}
+  input:focus{border-color:#c9a227}
   button.submit:disabled{opacity:.5;cursor:wait}
   .err{margin:0 0 .8rem;font-size:.82rem;color:#fff5f5;background:#c81e1e4d;
     border:1px solid #c81e1e80;border-radius:8px;padding:.5rem .7rem}
-  .swap{margin:1rem 0 0;text-align:center;font-size:.82rem;color:#6b7380}
+  .swap{margin:1rem 0 0;text-align:center;font-size:.82rem;color:#8b93a0}
   .swap button{background:none;border:0;padding:0;color:#c9a227;font-weight:600;cursor:pointer;
     text-decoration:underline}
-  a.back{display:block;text-align:center;margin-top:1rem;font-size:.78rem;color:#6b7380;text-decoration:none}
+  a.back{display:block;text-align:center;margin-top:1rem;font-size:.78rem;color:#8b93a0;text-decoration:none}
 </style>
 </head>
 <body>
   <div class="card">
     <h1>GRAND LINE TCG</h1>
+    <div class="rule" aria-hidden="true"></div>
     <div class="tabs">
       <button type="button" class="tab on" id="tab-signin">Connexion</button>
       <button type="button" class="tab" id="tab-signup">Créer un compte</button>
@@ -47,6 +70,7 @@
         <span>Pseudo</span>
         <input id="name" autocomplete="nickname" placeholder="Roronoa" />
       </label>
+      <p id="portrait-hint" hidden style="margin:-.2rem 0 .9rem;font-size:.78rem;color:#c9a56a;line-height:1.45;text-align:center">Ensuite, tu choisis un portrait parmi les cartes de ta collection.</p>
       <label>
         <span>Email</span>
         <input id="email" type="email" required autocomplete="email" placeholder="toi@exemple.com" />
@@ -76,6 +100,7 @@
       $("tab-signin").classList.toggle("on", mode === "signin");
       $("tab-signup").classList.toggle("on", mode === "signup");
       $("field-name").style.display = mode === "signup" ? "flex" : "none";
+      $("portrait-hint").hidden = mode !== "signup";
       $("password").autocomplete = mode === "signup" ? "new-password" : "current-password";
       $("submit").textContent = mode === "signup" ? "Créer mon compte" : "Se connecter";
       $("swap").innerHTML =
@@ -121,7 +146,23 @@
           body: JSON.stringify(body),
         });
         const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data?.message || "Email ou mot de passe incorrect.");
+        if (!r.ok) {
+          const msg = data?.message || data?.error?.message || (typeof data?.error === "string" ? data.error : "") || (r.status === 404 ? "Service de compte indisponible." : "Email ou mot de passe incorrect.");
+          throw new Error(msg);
+        }
+        const gate = await fetch("/api/social", { credentials: "include" });
+        if (gate.status === 403) {
+          await fetch("/api/auth/sign-out", { method: "POST", credentials: "include" }).catch(() => {});
+          throw new Error("Ce compte a été banni.");
+        }
+        if (mode === "signup" && window.GLPortrait) {
+          window.GLPortrait.open({
+            required: true,
+            onDone: function () { window.location.href = "/"; },
+            onSkip: function () { window.location.href = "/"; },
+          });
+          return;
+        }
         window.location.href = "/";
       } catch (ex) {
         err.textContent = ex.message || "Une erreur est survenue.";
@@ -131,5 +172,6 @@
       }
     });
   </script>
+  <script src="/portrait.js?v=11" defer></script>
 </body>
 </html>

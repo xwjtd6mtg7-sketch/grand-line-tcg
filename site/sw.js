@@ -1,6 +1,6 @@
 const ASSETS = "gl-tcg-assets";
-const SHELL = "gl-tcg-shell-v2";
-const ASSET_RE = /^\/(cards-fr|cards|boosters|cosmetics|combat|don|audio|playmat)\//;
+const SHELL = "gl-tcg-shell-v13";
+const ASSET_RE = /^\/(cards-fr|cards|boosters|cosmetics|combat|don|audio|playmat|social)\//;
 const ASSET_FILE = /^\/(card-back|logo-|favicon|icon-|apple-touch|don\.jpg)/i;
 
 self.addEventListener("install", (event) => {
@@ -25,6 +25,29 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data === "skipWaiting") self.skipWaiting();
+  if (event.data && event.data.type === "purge-catalog") {
+    event.waitUntil(
+      (async () => {
+        try {
+          const cache = await caches.open(ASSETS);
+          const keys = await cache.keys();
+          await Promise.all(
+            keys
+              .filter((k) => {
+                try {
+                  return new URL(k.url).pathname === "/data/catalog.json";
+                } catch {
+                  return false;
+                }
+              })
+              .map((k) => cache.delete(k)),
+          );
+        } catch {
+          /* ignore */
+        }
+      })(),
+    );
+  }
 });
 
 function isAsset(url) {
@@ -41,6 +64,21 @@ function isLive(req, url) {
   );
 }
 
+function applyCardOverrides(base, overrides) {
+  if (!base || !Array.isArray(base.cards) || !Array.isArray(overrides)) return base;
+  const byId = new Map(base.cards.map((c) => [c.id, c]));
+  for (const o of overrides) {
+    if (!o || !o.id) continue;
+    if (o.action === "delete") byId.delete(o.id);
+    else if (o.card && typeof o.card === "object") {
+      const prev = byId.get(o.id) || {};
+      byId.set(o.id, { ...prev, ...o.card, id: o.id });
+    }
+  }
+  base.cards = Array.from(byId.values());
+  return base;
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
@@ -52,6 +90,9 @@ self.addEventListener("fetch", (event) => {
       fetch(req)
         .then((res) => {
           if (res && res.ok) {
+            var ctype = (res.headers.get("content-type") || "").toLowerCase();
+            var isJs = /\.(js|mjs)(\?|$)/i.test(url.pathname);
+            if (isJs && ctype.includes("text/html")) return res;
             const copy = res.clone();
             caches.open(SHELL).then((c) => c.put(req, copy).catch(() => undefined));
           }
@@ -62,32 +103,34 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Never cache the admin override feed — edits must show up immediately.
+  if (url.pathname === "/api/card-overrides" || url.pathname === "/api/catalog" || url.pathname === "/api/progress") {
+    event.respondWith(fetch(req, { cache: "no-store" }).catch(() => Response.error()));
+    return;
+  }
+
   // Admin-added/edited/removed cards, merged over the static catalog on the
-  // fly — the game's own compiled JS never changes. Any failure here falls
-  // back to the exact behavior below (cache-first static file), so this can
-  // never make the catalog worse than before.
+  // fly. Prefer the server-merged payload; if that is just the static file,
+  // still layer /api/card-overrides on top.
   if (url.pathname === "/data/catalog.json") {
     event.respondWith(
       (async () => {
         try {
           const [baseRes, overridesRes] = await Promise.all([
-            fetch(req),
-            fetch("/api/card-overrides").catch(() => null),
+            fetch(req, { cache: "no-store" }),
+            fetch("/api/card-overrides", { cache: "no-store" }).catch(() => null),
           ]);
           if (!baseRes || !baseRes.ok) throw new Error("base catalog fetch failed");
-          caches.open(ASSETS).then((c) => c.put(req, baseRes.clone()).catch(() => undefined));
           if (!overridesRes || !overridesRes.ok) return baseRes;
           const overrides = await overridesRes.json();
           if (!Array.isArray(overrides) || !overrides.length) return baseRes;
-          const base = await baseRes.clone().json();
-          const byId = new Map(base.cards.map((c) => [c.id, c]));
-          for (const o of overrides) {
-            if (o.action === "delete") byId.delete(o.id);
-            else if (o.card) byId.set(o.id, o.card);
-          }
-          base.cards = Array.from(byId.values());
+          const base = await baseRes.json();
+          applyCardOverrides(base, overrides);
           return new Response(JSON.stringify(base), {
-            headers: { "content-type": "application/json; charset=utf-8" },
+            headers: {
+              "content-type": "application/json; charset=utf-8",
+              "cache-control": "no-store",
+            },
           });
         } catch {
           const cache = await caches.open(ASSETS);

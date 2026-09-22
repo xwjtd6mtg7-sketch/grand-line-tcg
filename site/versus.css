@@ -1,0 +1,1809 @@
+/* Versus — Grand Line TCG */
+.tab-host > #gl-vs-root.gl-vs-root {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 22;
+}
+html.gl-versus-on .tab-host > .tab-pane {
+  pointer-events: none !important;
+}
+html.gl-versus-on:has(#gl-vs-root[hidden]) .tab-host > .tab-pane {
+  pointer-events: auto !important;
+}
+html.gl-versus-on .tab-host > #gl-so-root { display: none !important; }
+html.gl-versus-on .tab-host > #gl-vs-root {
+  visibility: visible !important;
+  pointer-events: auto !important;
+  display: flex !important;
+}
+html.gl-versus-on .tab-host > #gl-vs-root[hidden],
+#gl-vs-root[hidden],
+.gl-vs-root[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html.gl-versus-fight .app-nav,
+html.gl-versus-fight .gl-ms-fab,
+html.gl-versus-priv .gl-ms-fab { display: none !important; }
+
+.gl-vs-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+}
+.gl-vs-portal[hidden] { display: none !important; }
+.gl-vs-portal .filter-sheet {
+  pointer-events: auto;
+  z-index: 90;
+}
+.gl-vs-portal .filter-sheet.gl-vs-decks { z-index: 140; }
+.gl-vs-portal .dossier-sheet {
+  display: flex !important;
+  flex-direction: column !important;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border-radius: 22px 22px 0 0;
+}
+.gl-vs-portal .cmb-prep-body {
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: none !important;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden !important;
+  padding: 0 0 4px !important;
+}
+.gl-vs-portal .dossier-grab {
+  touch-action: none;
+  cursor: grab;
+}
+.gl-vs-portal .dossier-sheet.is-drag {
+  transition: none !important;
+}
+.gl-vs-portal .cmb-prep-card {
+  flex-shrink: 0;
+  width: 100%;
+}
+.gl-vs-deck-slot {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gl-vs-portal .cmb-mydeck.deck-tile,
+.gl-vs-portal .gl-vs-prep .cmb-mydeck.deck-tile {
+  width: min(168px, 46%) !important;
+  max-width: 168px !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 232px !important;
+  margin: 0 auto !important;
+  flex-shrink: 0 !important;
+  overflow: hidden;
+  border: 1px solid #c9a22788 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 18px #0007;
+}
+.gl-vs-portal .deck-tile-hero .deck-tile-pack {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 63 / 88;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.gl-vs-portal .deck-tile-hero .deck-tile-pack img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  aspect-ratio: auto !important;
+  display: block;
+}
+.gl-vs-portal .cmb-prep-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 16px max(14px, env(safe-area-inset-bottom)) !important;
+  flex-shrink: 0;
+}
+.gl-vs-portal .cmb-prep-actions .cmb-go {
+  display: grid !important;
+  width: auto !important;
+  min-width: 120px !important;
+  height: 44px !important;
+  margin: 0 auto !important;
+  padding: 0 28px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(#f0d78a, #c9a227) !important;
+  color: #102030 !important;
+  font-family: Cinzel, serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  box-shadow: 0 8px 18px #c9a22755 !important;
+}
+.gl-vs-portal .cmb-prep-actions .cmb-close {
+  position: static !important;
+  transform: none !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 44px !important;
+  height: 44px !important;
+  margin: 0 auto !important;
+}
+.gl-vs-manual {
+  display: flex;
+  gap: 8px;
+  width: min(360px, 100%);
+  margin: 12px auto 8px;
+}
+.gl-vs-manual input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #c9a22755;
+  background: #0e141c;
+  color: #f4ead4;
+  padding: 0 12px;
+  font: 600 14px Figtree, sans-serif;
+  pointer-events: auto;
+}
+.gl-vs-portal input,
+.gl-vs-portal textarea {
+  pointer-events: auto !important;
+}
+
+.gl-vs-root {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  background: #070B14;
+  color: #f4ead4;
+  font-family: Figtree, ui-sans-serif, system-ui, sans-serif;
+  overflow: hidden;
+}
+.gl-vs-root[hidden] { display: none !important; }
+
+.gl-vs-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 18px);
+  padding-bottom: 76px;
+  background: #070B14;
+}
+.gl-vs-page .gl-head { flex: none; padding: 10px 16px 0; }
+.gl-vs-page .gl-head-title { margin: 0; }
+.gl-vs-page .gl-rule { margin-bottom: 8px; }
+
+.gl-vs-root > .cmb-page {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+}
+.gl-vs-root > .cmb-page > .cmb-hero {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+.gl-vs-root > .cmb-page > .cmb-hero::after,
+.tab-pane > .cmb-page:has(> .cmb-hero) > .cmb-hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48%;
+  min-height: 168px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, #070B1400 0%, #070B1466 28%, #070B14d8 70%, #070B14 100%);
+}
+.gl-vs-root > .cmb-page > .cmb-hero .cmb-hero-img,
+.tab-pane > .cmb-page:has(> .cmb-hero) > .cmb-hero .cmb-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+}
+.gl-vs-root > .cmb-page > .cmb-hero picture,
+.tab-pane > .cmb-page:has(> .cmb-hero) > .cmb-hero picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.gl-vs-root > .cmb-page > .cmb-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, #070B1400 0%, #070B14a0 32%, #070B14 68%, #070B14 100%);
+  padding-top: 36px;
+  padding-bottom: 12px;
+}
+
+/* Same bleed on the Solo lobby if Versus overlay is not covering it */
+.tab-pane > .cmb-page:has(> .cmb-hero) {
+  position: relative;
+}
+.tab-pane > .cmb-page:has(> .cmb-hero) > .cmb-hero {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.tab-pane > .cmb-page:has(> .cmb-hero) > .cmb-hero .cmb-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+}
+.tab-pane > .cmb-page:has(> .cmb-hero) > .cmb-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, #070B1400 0%, #070B14a0 32%, #070B14 68%, #070B14 100%);
+  padding-top: 36px;
+  padding-bottom: 12px;
+}
+.gl-vs-priv-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0 80px;
+}
+.gl-vs-root .cmb-mydeck,
+.gl-vs-prep .cmb-mydeck.deck-tile {
+  width: 168px !important;
+  max-width: 168px !important;
+  min-width: 168px !important;
+  height: auto !important;
+  min-height: 232px !important;
+  margin: 14px auto 8px !important;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid #c9a22799 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 0 0 1px #c9a22744, 0 10px 22px #0008;
+  pointer-events: auto;
+}
+.gl-vs-prep .cmb-prep-body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  align-items: center;
+}
+.gl-vs-root .filter-sheet.gl-vs-decks { z-index: 140; }
+.gl-vs-decks .deck-pick-check svg { width: 16px; height: 16px; }
+.gl-vs-decks .filter-float { pointer-events: none; padding-bottom: 12px; }
+.gl-vs-decks .studio-float-save { pointer-events: auto; }
+
+/* Same chrome as Solo: keep the compiled .cmb-float centering so Decks
+   sits with the back arrow like Combat / Solo (desktop.css space-between
+   still applies on wide screens). */
+.gl-vs-root .cmb-float {
+  width: 100%;
+  pointer-events: none;
+  z-index: 6;
+}
+.gl-vs-root .cmb-float > button { pointer-events: auto; }
+.gl-vs-root .cmb-deck-btn svg { width: 20px; height: 20px; }
+.gl-vs-root .cmb-back svg { width: 16px; height: 16px; }
+.gl-vs-root .cmb-go {
+  display: grid;
+  width: auto;
+  min-width: 120px;
+  height: 44px;
+  margin: 12px auto 0;
+  padding: 0 28px;
+}
+.gl-vs-root .cmb-go:disabled { opacity: 0.38; }
+.gl-vs-root .cmb-hero-img { object-position: center 22%; }
+.gl-vs-root .deck-pick-pack { object-fit: cover; width: 48px; height: 68px; }
+.gl-vs-root .filter-sheet { z-index: 110; }
+.gl-vs-root .filter-sheet.gl-vs-prep { z-index: 90; }
+
+.gl-vs-prep-card {
+  flex-direction: row !important;
+  align-items: stretch;
+  min-height: 168px !important;
+}
+.gl-vs-prep-lead {
+  flex: 0 0 34%;
+  max-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e8d48a;
+  filter: drop-shadow(0 0 12px #c9a22755);
+}
+.gl-vs-prep-lead svg { width: 64px; height: 64px; }
+.gl-vs-prep-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+.gl-vs-prep-meta p {
+  margin: 0 0 2px;
+  color: #c9b58a;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.gl-vs-prep .gl-vs-pw-btn {
+  width: 100%;
+  min-height: 42px;
+  font-size: 14px;
+}
+.gl-vs-qr-btn {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid #c9a22755;
+  background: #0e141c;
+  color: #e8d48a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-family: Cinzel, serif;
+  letter-spacing: 0.04em;
+}
+.gl-vs-qr-btn svg { width: 18px; height: 18px; }
+
+.gl-vs-prep .cmb-prep-actions {
+  position: relative;
+}
+.gl-vs-prep .cmb-go:disabled { opacity: 0.38; }
+.gl-vs-prep .gl-vs-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+}
+
+.gl-vs-page .cmb-float {
+  width: 100%;
+  padding-left: 14px;
+  padding-right: 14px;
+  pointer-events: none;
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  z-index: 6;
+}
+.gl-vs-page .cmb-float > button { pointer-events: auto; }
+.gl-vs-page .cmb-deck-btn svg { width: 20px; height: 20px; }
+.gl-vs-page .cmb-back svg { width: 16px; height: 16px; }
+
+.gl-vs-copy {
+  padding: 8px 22px 0;
+  text-align: center;
+  color: #c9b58a;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.gl-vs-copy b { color: #e8d48a; font-weight: 600; }
+
+.gl-vs-icon-hero {
+  width: 72px;
+  height: 72px;
+  margin: 8px auto 4px;
+  color: #e8d48a;
+  filter: drop-shadow(0 0 12px #c9a22755);
+}
+.gl-vs-icon-hero svg { width: 100%; height: 100%; }
+
+.gl-vs-page .cmb-mydeck {
+  width: min(168px, 46%);
+  margin: 10px auto 4px;
+}
+
+.gl-vs-pw {
+  width: calc(100% - 36px);
+  margin: 12px 18px 0;
+  background: linear-gradient(#1a2130, #121820);
+  border: 1px solid #c9a22755;
+  border-radius: 18px;
+  padding: 14px 14px 16px;
+  text-align: center;
+}
+.gl-vs-pw label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b93a0;
+  margin-bottom: 8px;
+}
+.gl-vs-pw-btn {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 999px;
+  border: 1px solid #c9a22766;
+  background: #0e141c;
+  color: #e8d48a;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.gl-vs-pw-btn svg { width: 16px; height: 16px; }
+
+.gl-vs-go {
+  display: block;
+  width: min(280px, calc(100% - 48px));
+  margin: 10px auto 0;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 0;
+  background: linear-gradient(#f0d78a, #c9a227);
+  color: #102030;
+  font-family: Cinzel, serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.gl-vs-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  background: #070b14cc;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.gl-vs-sheet-card {
+  width: 100%;
+  border-radius: 22px 22px 0 0;
+  background: linear-gradient(#1c2430, #0e141c);
+  border: 1px solid #c9a22755;
+  animation: vs-sheet-up .38s cubic-bezier(.22, 1, .36, 1);
+  padding: 18px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -18px 40px #0009;
+}
+.gl-vs-sheet-card h3 {
+  margin: 0 0 14px;
+  text-align: center;
+  font-family: Cinzel, serif;
+  font-size: 1.05rem;
+  color: #e8d48a;
+}
+.gl-vs-sheet-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.gl-vs-choice {
+  min-height: 108px;
+  border-radius: 16px;
+  border: 1px solid #c9a22755;
+  background: #121820;
+  color: #f4ead4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: Cinzel, serif;
+  font-size: 13px;
+}
+.gl-vs-choice svg { width: 36px; height: 36px; color: #e8d48a; }
+.gl-vs-sheet-list { display: flex; flex-direction: column; gap: 8px; }
+.gl-vs-sheet-list button {
+  min-height: 48px;
+  border-radius: 999px;
+  border: 1px solid #c9a22755;
+  background: #121820;
+  color: #e8d48a;
+  font-size: 15px;
+}
+.gl-vs-x {
+  display: block;
+  width: 44px;
+  height: 44px;
+  margin: 14px auto 0;
+  border-radius: 50%;
+  border: 1px solid #c9a22766;
+  background: #0e141c;
+  color: #e8d48a;
+  font-size: 18px;
+}
+
+.gl-vs-field {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 999px;
+  border: 1px solid #c9a22755;
+  background: #0e141c;
+  color: #f4ead4;
+  font-size: 16px;
+  text-align: center;
+  padding: 0 16px;
+  margin: 8px 0 6px;
+}
+.gl-vs-hint { text-align: center; font-size: 12px; color: #8b93a0; margin: 0 0 4px; }
+.gl-vs-warn { text-align: center; font-size: 12px; color: #f5a3a3; margin: 0 0 12px; line-height: 1.4; }
+.gl-vs-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gl-vs-ghost {
+  min-height: 46px;
+  border-radius: 999px;
+  border: 1px solid #c9a22755;
+  background: none;
+  color: #f4ead4;
+  font-size: 15px;
+}
+
+.gl-vs-wait {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px 16px 8px;
+  -webkit-overflow-scrolling: touch;
+}
+.gl-vs-code {
+  font-family: Cinzel, serif;
+  font-size: clamp(1.15rem, 5.5vw, 1.7rem);
+  letter-spacing: 0.16em;
+  color: #e8d48a;
+  margin: 8px 0 0;
+}
+.gl-vs-qr {
+  width: min(220px, 68vw, calc(100dvh - 360px));
+  max-width: 240px;
+  aspect-ratio: 1;
+  height: auto;
+  margin: 8px auto;
+  padding: 8px;
+  border-radius: 16px;
+  background: #0e141c;
+  border: 1px solid #c9a22766;
+  box-shadow: 0 10px 28px #0008, inset 0 1px #f4ead418;
+  flex: none;
+  cursor: zoom-in;
+}
+.gl-vs-qr img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 10px;
+  background: #070b14;
+  pointer-events: none;
+}
+.gl-qr-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  background: #05080ef5;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+}
+.gl-qr-zoom.is-on { display: flex; }
+.gl-qr-zoom img {
+  width: min(86vw, 420px);
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 18px;
+  background: #0e141c;
+  padding: 18px;
+  border: 1px solid #c9a22788;
+  box-shadow: 0 24px 60px #000c, 0 0 40px #c9a22733;
+}
+.gl-vs-page.is-qr .gl-vs-icon-hero {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 2px;
+}
+.gl-vs-page.is-qr .gl-vs-copy {
+  padding: 6px 18px 0;
+  font-size: 0.84rem;
+}
+@media (max-height: 720px) {
+  .gl-vs-qr { width: min(180px, 56vw, calc(100dvh - 340px)); }
+  .gl-vs-page.is-qr .gl-vs-icon-hero { width: 40px; height: 40px; }
+}
+@media (max-height: 620px) {
+  .gl-vs-qr { width: min(148px, 48vw); }
+  .gl-vs-code { font-size: 1.05rem; }
+}
+.gl-vs-spin {
+  width: 36px;
+  height: 36px;
+  margin: 8px auto;
+  border: 3px solid #c9a22733;
+  border-top-color: #e8d48a;
+  border-radius: 50%;
+  animation: gl-vs-rot 0.9s linear infinite;
+}
+@keyframes gl-vs-rot { to { transform: rotate(360deg); } }
+
+.gl-vs-scan video {
+  width: min(100%, 320px);
+  max-height: min(280px, 42dvh);
+  object-fit: cover;
+  border-radius: 16px;
+  background: #000;
+  border: 1px solid #c9a22755;
+}
+
+/* Fight */
+.gl-vs-fight {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+  gap: 6px;
+}
+.gl-vs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gl-vs-ava {
+  width: 48px;
+  height: 68px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #c9a22766;
+  flex: none;
+  background: #0e141c;
+}
+.gl-vs-ava img { width: 100%; height: 100%; object-fit: cover; }
+.gl-vs-ava.is-tgt { box-shadow: 0 0 0 2px #e8d48a, 0 0 12px #c9a22788; }
+.gl-vs-meta { flex: 1; min-width: 0; }
+.gl-vs-meta b { display: block; font-size: 13px; color: #e8d48a; }
+.gl-vs-meta span { font-size: 11px; color: #8b93a0; }
+.gl-vs-pips { display: flex; gap: 3px; margin-top: 4px; }
+.gl-vs-pips i {
+  width: 10px; height: 14px; border-radius: 2px;
+  background: #c9a227; display: block;
+}
+.gl-vs-pips i.off { background: #2a3140; }
+.gl-vs-don {
+  font-family: Cinzel, serif;
+  font-size: 12px;
+  color: #e8d48a;
+  border: 1px solid #c9a22766;
+  border-radius: 99px;
+  padding: 4px 10px;
+  flex: none;
+}
+.gl-vs-lane {
+  display: flex;
+  gap: 6px;
+  min-height: 86px;
+  overflow-x: auto;
+  padding: 2px;
+  scrollbar-width: none;
+}
+.gl-vs-lane::-webkit-scrollbar { display: none; }
+.gl-vs-card {
+  flex: 0 0 58px;
+  width: 58px;
+  aspect-ratio: 63/88;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #c9a22755;
+  background: #0b1018;
+  position: relative;
+}
+.gl-vs-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gl-vs-card.is-rest { filter: grayscale(0.4) brightness(0.7); transform: rotate(90deg); }
+.gl-vs-card.is-sel { box-shadow: 0 0 0 2px #e8d48a; }
+.gl-vs-card.is-sick::after {
+  content: "S";
+  position: absolute; top: 2px; right: 2px;
+  background: #c9a227; color: #111; font-size: 8px; font-weight: 800;
+  border-radius: 3px; padding: 0 3px;
+}
+.gl-vs-card em {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: #0009; color: #e8d48a; font-size: 9px; font-style: normal;
+  text-align: center; padding: 1px 0;
+}
+.gl-vs-hand {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  min-height: 102px;
+  padding: 4px 2px;
+  scrollbar-width: none;
+}
+.gl-vs-hand::-webkit-scrollbar { display: none; }
+.gl-vs-hand .gl-vs-card { flex-basis: 68px; width: 68px; }
+.gl-vs-log {
+  font-size: 11px;
+  color: #c9b58a;
+  min-height: 16px;
+  text-align: center;
+}
+.gl-vs-turn {
+  text-align: center;
+  font-family: Cinzel, serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #e8d48a;
+}
+.gl-vs-actions { display: flex; gap: 8px; }
+.gl-vs-actions button {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid #c9a22766;
+  background: #141b26;
+  color: #f4ead4;
+  font-size: 13px;
+  font-weight: 700;
+}
+.gl-vs-actions .is-gold {
+  border: 0;
+  background: linear-gradient(#f0d78a, #c9a227);
+  color: #102030;
+}
+.gl-vs-actions .is-gold:disabled { opacity: 0.4; }
+
+.gl-vs-result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+.gl-vs-result h2 {
+  font-family: Cinzel, serif;
+  font-size: 1.8rem;
+  color: #e8d48a;
+  margin: 0;
+  letter-spacing: 0.1em;
+}
+.gl-vs-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 88px;
+  transform: translateX(-50%) translateY(8px);
+  background: #0e141c;
+  border: 1px solid #c9a22766;
+  color: #f4ead4;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 12;
+}
+.gl-vs-toast.is-on { opacity: 1; transform: translateX(-50%); }
+
+.gl-vs-login {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+}
+
+@media (min-width: 760px) {
+  .gl-vs-hero { height: 220px; }
+  .gl-vs-sheet { align-items: center; }
+  .gl-vs-sheet-card {
+    width: min(92vw, 420px);
+    border-radius: 22px;
+  }
+}
+@media (min-width: 1120px) and (hover: hover) and (pointer: fine) {
+  .gl-vs-page { padding-top: 18px; }
+}
+
+@keyframes vs-sheet-up {
+  from { transform: translate3d(0, 100%, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+/* ─── Online duel playmat (OPTCG) ─── */
+html.gl-versus-fight #gl-vs-root {
+  background: #08110c;
+}
+html.gl-versus-fight .gl-vs-root {
+  padding: 0;
+}
+
+.gl-vs-duel {
+  --vs-gold: #c9a227;
+  --vs-ink: #e8d48a;
+  --vs-muted: #9aa38a;
+  --vs-cw: clamp(44px, 11.4vw, 62px);
+  --vs-ch: calc(var(--vs-cw) * 88 / 63);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: calc(env(safe-area-inset-top, 0px) + 6px) 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  background:
+    linear-gradient(180deg, #070b14cc 0%, #070b1466 18%, #070b1466 82%, #070b14e6 100%),
+    url("/cosmetics/mats/felt.jpg") center / cover no-repeat,
+    #0c1812;
+  overflow: hidden;
+}
+
+.gl-vs-clocks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex: none;
+}
+.gl-vs-clock {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid #c9a22733;
+  background: #0e141ce8;
+  color: #c9b58a;
+  min-height: 36px;
+}
+.gl-vs-clock small {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gl-vs-clock b {
+  font-family: Cinzel, serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e8d48a;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.gl-vs-clock.is-run {
+  border-color: #e8d48a;
+  box-shadow: 0 0 0 1px #c9a22788, 0 0 16px #c9a22744;
+  background: linear-gradient(180deg, #1c2430, #121820);
+}
+.gl-vs-clock.is-run b { color: #f6e7a8; }
+.gl-vs-clock.is-low b { color: #f5a3a3; }
+.gl-vs-clock.is-low.is-run {
+  border-color: #e07070;
+  box-shadow: 0 0 16px #e0707044;
+  animation: vs-clock-pulse 1s ease-in-out infinite;
+}
+@keyframes vs-clock-pulse {
+  50% { box-shadow: 0 0 22px #e0707088; }
+}
+
+.gl-vs-opp,
+.gl-vs-me {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+.gl-vs-opp { flex: 0 0 auto; }
+.gl-vs-me { flex: 1 1 auto; min-height: 0; }
+
+.gl-vs-opp-top,
+.gl-vs-me-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+}
+.gl-vs-me-bar .gl-vs-life {
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-end;
+}
+.gl-vs-opp-mid {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.gl-vs-opp-mid > b {
+  font-size: 11px;
+  color: #e8d48a;
+  font-family: Cinzel, serif;
+  letter-spacing: 0.04em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gl-vs-handn {
+  font-size: 10px;
+  color: #9aa38a;
+}
+.gl-vs-obacks {
+  display: flex;
+  justify-content: center;
+  height: 18px;
+}
+.gl-vs-oback {
+  width: 14px;
+  height: 20px;
+  margin-left: -6px;
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid #c9a22755;
+  box-shadow: 0 1px 3px #0008;
+}
+.gl-vs-oback:first-child { margin-left: 0; }
+.gl-vs-oback img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.gl-vs-pile {
+  position: relative;
+  width: calc(var(--vs-cw) * 0.78);
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.gl-vs-pile img,
+.gl-vs-pile-empty {
+  width: 100%;
+  aspect-ratio: 63 / 88;
+  object-fit: cover;
+  border-radius: 5px;
+  border: 1px solid #c9a22755;
+  background: #0b1018;
+  box-shadow: 0 4px 10px #0008;
+}
+.gl-vs-pile-empty { opacity: 0.28; }
+.gl-vs-pile span {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c9b58a;
+}
+
+.gl-vs-donpile {
+  position: relative;
+  width: calc(var(--vs-cw) * 0.86);
+  flex: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.gl-vs-donpile img {
+  width: 100%;
+  aspect-ratio: 63 / 88;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #c9a22788;
+  box-shadow: 0 0 10px #c9a22744, 0 4px 10px #0008;
+}
+.gl-vs-donpile span {
+  font-size: 10px;
+  font-weight: 700;
+  color: #e8d48a;
+  font-family: Cinzel, serif;
+}
+.gl-vs-donpile small {
+  font-size: 8px;
+  color: #9aa38a;
+  letter-spacing: 0.02em;
+}
+.gl-vs-donpile.is-sel img {
+  box-shadow: 0 0 0 2px #f0d78a, 0 0 16px #c9a227aa;
+}
+.gl-vs-donpile:disabled { opacity: 0.85; }
+
+.gl-vs-leader {
+  position: relative;
+  width: var(--vs-cw);
+  height: var(--vs-ch);
+  padding: 0;
+  border: 1px solid #e8d48a99;
+  border-radius: 7px;
+  overflow: hidden;
+  background: #0b1018;
+  flex: none;
+  box-shadow: 0 0 0 1px #c9a22744, 0 6px 14px #0008;
+}
+.gl-vs-leader img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gl-vs-leader em {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: #000b;
+  color: #e8d48a;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+  text-align: center;
+  padding: 1px 0;
+  font-family: Cinzel, serif;
+}
+.gl-vs-leader.is-rest {
+  transform: rotate(90deg) scale(0.86);
+  filter: grayscale(0.25) brightness(0.78);
+}
+.gl-vs-leader.is-sel,
+.gl-vs-leader.is-tgt {
+  box-shadow: 0 0 0 2px #f0d78a, 0 0 16px #c9a22799;
+}
+.gl-vs-leader.is-tgt { box-shadow: 0 0 0 2px #f07070, 0 0 14px #e0707088; }
+
+.gl-vs-life {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-height: 28px;
+  padding: 0 4px;
+}
+.gl-vs-life .life-card {
+  width: 20px;
+  height: 28px;
+  margin-right: -8px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid #c9a22766;
+  background: #0b1018;
+  box-shadow: 0 2px 4px #0008;
+}
+.gl-vs-life .life-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gl-vs-life .life-card.is-empty {
+  opacity: 0.18;
+  border-style: dashed;
+  background: #0b101866;
+}
+.gl-vs-life .life-n {
+  margin-left: 12px;
+  font-family: Cinzel, serif;
+  font-size: 1rem;
+  color: #e8d48a;
+  font-weight: 700;
+}
+
+.gl-vs-duel .gl-vs-lane {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  min-height: var(--vs-ch);
+  padding: 2px 2px;
+  overflow: visible;
+}
+.gl-vs-duel .gl-vs-lane .gl-vs-card,
+.gl-vs-duel .gl-vs-lane .gl-vs-slot {
+  width: 100%;
+  max-width: var(--vs-cw);
+  margin: 0 auto;
+  flex: none;
+}
+.gl-vs-slot {
+  aspect-ratio: 63 / 88;
+  border-radius: 6px;
+  border: 1px dashed #c9a22733;
+  background: #0003;
+}
+.gl-vs-slot.is-drop { border-color: #c9a22766; }
+
+.gl-vs-duel .gl-vs-card {
+  flex: none;
+  width: var(--vs-cw);
+  aspect-ratio: 63 / 88;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #c9a22755;
+  background: #0b1018;
+  position: relative;
+  padding: 0;
+  box-shadow: 0 4px 10px #0007;
+}
+.gl-vs-duel .gl-vs-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+.gl-vs-card.is-rest {
+  transform: rotate(90deg) scale(0.84);
+  filter: grayscale(0.35) brightness(0.72);
+}
+.gl-vs-card.is-sel {
+  box-shadow: 0 0 0 2px #f0d78a, 0 0 14px #c9a227aa;
+  z-index: 2;
+}
+.gl-vs-card.is-tgt {
+  box-shadow: 0 0 0 2px #f07070, 0 0 12px #e0707088;
+  z-index: 2;
+}
+.gl-vs-card.is-blockable {
+  box-shadow: 0 0 0 2px #7ad0c8, 0 0 12px #7ad0c866;
+}
+.gl-vs-card.is-counter {
+  box-shadow: 0 0 0 2px #7dcea0, 0 0 12px #7dcea066;
+}
+.gl-vs-card.is-sick::after {
+  content: "S";
+  position: absolute;
+  top: 2px; right: 2px;
+  background: #c9a227;
+  color: #111;
+  font-size: 8px;
+  font-weight: 800;
+  border-radius: 3px;
+  padding: 0 3px;
+}
+.gl-vs-card.is-rush:not(.is-sick)::after {
+  content: "R";
+  position: absolute;
+  top: 2px; right: 2px;
+  background: #c4453c;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  border-radius: 3px;
+  padding: 0 3px;
+}
+.gl-vs-card.is-blocker:not(.is-sick)::before {
+  content: "B";
+  position: absolute;
+  top: 2px; left: 2px;
+  background: #3b6ea8;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  border-radius: 3px;
+  padding: 0 3px;
+  z-index: 1;
+}
+.gl-vs-card em {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: #0009;
+  color: #e8d48a;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+  text-align: center;
+  padding: 1px 0;
+}
+.gl-vs-card b {
+  position: absolute;
+  left: 2px; bottom: 14px;
+  background: #0e141ccc;
+  color: #f0d78a;
+  font-size: 8px;
+  font-weight: 800;
+  border-radius: 3px;
+  padding: 0 3px;
+}
+.gl-vs-donchip {
+  position: absolute;
+  right: 2px; bottom: 14px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #c9a227;
+  color: #111;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 6px #c9a22788;
+}
+.gl-vs-card s {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  text-decoration: none;
+  background: #1a3a28ee;
+  color: #b6f0c8;
+  font-size: 10px;
+  font-weight: 800;
+  border-radius: 99px;
+  padding: 2px 6px;
+  border: 1px solid #7dcea0;
+}
+
+.gl-vs-stage {
+  display: flex;
+  justify-content: flex-start;
+  padding: 0 6px;
+}
+.gl-vs-stage .gl-vs-card {
+  width: calc(var(--vs-cw) * 0.78);
+}
+
+.gl-vs-mid {
+  flex: none;
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: #0e141ce6;
+  border: 1px solid #c9a22733;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  position: relative;
+}
+.gl-vs-mid.is-mine {
+  border-color: #c9a22788;
+  box-shadow: 0 0 12px #c9a22733;
+}
+.gl-vs-mid.is-react {
+  border-color: #7ad0c8;
+  background: #102018ee;
+}
+.gl-vs-duel .gl-vs-turn {
+  margin: 0;
+  font-family: Cinzel, serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #e8d48a;
+}
+.gl-vs-duel .gl-vs-log {
+  margin: 0;
+  font-size: 11px;
+  color: #c9b58a;
+  min-height: 14px;
+}
+.gl-vs-react-cd {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: Cinzel, serif;
+  font-size: 13px;
+  color: #7ad0c8;
+}
+
+.gl-vs-duel .gl-vs-hand {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  overflow-x: auto;
+  min-height: calc(var(--vs-ch) * 1.12);
+  padding: 4px 2px 2px;
+  scrollbar-width: none;
+  flex: 1 1 auto;
+}
+.gl-vs-duel .gl-vs-hand::-webkit-scrollbar { display: none; }
+.gl-vs-duel .gl-vs-hand .gl-vs-card {
+  flex: 0 0 calc(var(--vs-cw) * 1.12);
+  width: calc(var(--vs-cw) * 1.12);
+  margin-left: calc(var(--vs-cw) * -0.28);
+  transform: translateY(8px);
+  transition: transform 0.16s ease;
+}
+.gl-vs-duel .gl-vs-hand .gl-vs-card:first-child { margin-left: 0; }
+.gl-vs-duel .gl-vs-hand .gl-vs-card.is-sel,
+.gl-vs-duel .gl-vs-hand .gl-vs-card:active {
+  transform: translateY(-10px);
+  z-index: 3;
+}
+
+.gl-vs-duel .gl-vs-actions {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding-top: 2px;
+}
+.gl-vs-duel .gl-vs-actions button {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid #c9a22766;
+  background: #141b26;
+  color: #f4ead4;
+  font-size: 13px;
+  font-weight: 700;
+}
+.gl-vs-duel .gl-vs-actions .is-gold {
+  border: 0;
+  background: linear-gradient(#f0d78a, #c9a227);
+  color: #102030;
+}
+.gl-vs-duel .gl-vs-actions .is-gold:disabled { opacity: 0.4; }
+
+html.gl-versus-fight .gl-vs-toast {
+  bottom: 96px;
+}
+
+@media (max-height: 700px) {
+  .gl-vs-duel { --vs-cw: clamp(40px, 10.5vw, 54px); gap: 3px; }
+  .gl-vs-clock b { font-size: 1rem; }
+  .gl-vs-duel .gl-vs-hand { min-height: calc(var(--vs-ch) * 1.05); }
+}
+@media (min-width: 760px) {
+  .gl-vs-duel {
+    --vs-cw: 68px;
+    max-width: 520px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-vs-clock.is-low.is-run { animation: none; }
+  .gl-vs-duel .gl-vs-hand .gl-vs-card { transition: none; }
+}
+
+html.gl-versus-solo .gl-vs-root,
+html.gl-versus-solo #gl-vs-portal {
+  display: none !important;
+}
+html.gl-versus-solo .app-nav,
+html.gl-versus-solo .gl-ms-fab {
+  display: none !important;
+}
+
+.gl-vs-clocks-float {
+  position: fixed;
+  inset: 0;
+  z-index: 125;
+  width: auto;
+  pointer-events: none;
+}
+html.gl-versus-fight .gl-vs-clocks-float,
+html.gl-versus-solo .gl-vs-clocks-float {
+  z-index: 125 !important;
+}
+.gl-vs-clocks-float[hidden] { display: none !important; }
+html:not(.gl-versus-fight):not(.gl-versus-solo) .gl-vs-clocks-float,
+html:has(.over-root) .gl-vs-clocks-float,
+html:has(#gl-vs-resume) .gl-vs-clocks-float {
+  display: none !important;
+}
+.gl-vs-clocks.is-float.is-names .gl-vs-clock {
+  padding: 3px 10px 4px;
+  min-width: 0;
+}
+.gl-vs-clocks.is-float.is-names .gl-vs-clock b { display: none !important; }
+.gl-vs-clocks.is-float.is-names .gl-vs-clock small {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  max-width: 110px;
+  opacity: 1;
+  color: #f4ead4;
+  font-weight: 600;
+}
+.gl-vs-clocks.is-float.is-names .gl-vs-clock.is-run,
+.gl-vs-clocks.is-float.is-names .gl-vs-clock.is-low {
+  border-color: #c9a22733;
+  box-shadow: none;
+  animation: none;
+}
+.gl-vs-clocks.is-float {
+  display: contents;
+  flex: none;
+  gap: 0;
+}
+.gl-vs-clocks.is-float .gl-vs-clock {
+  position: relative;
+  overflow: visible;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 2px 8px 3px;
+  min-height: 0;
+  min-width: 0;
+  border-radius: 9px;
+  background: #0b1018cc;
+  border-color: #c9a22733;
+  box-shadow: none;
+  opacity: 0.82;
+  pointer-events: none;
+}
+.gl-vs-clocks.is-float .gl-vs-clock small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  max-width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.8;
+  color: #c9d0da;
+}
+.gl-vs-clocks.is-float .gl-vs-clock b {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #e8d48a;
+  line-height: 1.1;
+}
+.gl-vs-clocks.is-float .gl-vs-clock.is-run {
+  opacity: 0.95;
+  box-shadow: none;
+  border-color: #c9a22766;
+}
+.gl-vs-clocks.is-float .gl-vs-clock-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+.gl-vs-clocks.is-float .gl-vs-clock.is-away {
+  min-width: 78px;
+  padding: 4px 9px 5px;
+  background: #1a1016ee;
+  border-color: #e08a8a88;
+  opacity: 1;
+}
+.gl-vs-clocks.is-float .gl-vs-clock.is-away .gl-vs-clock-face {
+  animation: gl-vs-away-morph 560ms cubic-bezier(.2,.75,.2,1);
+}
+.gl-vs-clocks.is-float .gl-vs-clock.is-away small {
+  display: block;
+  max-width: 88px;
+  color: #d7cfc6;
+  opacity: 0.85;
+}
+.gl-vs-clocks.is-float .gl-vs-clock.is-away b {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffb4b4;
+  font-weight: 700;
+}
+.gl-vs-clocks.is-float .gl-vs-clock.is-away em {
+  display: block;
+  margin-top: 1px;
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #f0d78a;
+  font-variant-numeric: tabular-nums;
+  font-family: Cinzel, serif;
+}
+.gl-vs-clocks.is-float .gl-vs-clock.is-away::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 12px;
+  border: 1px solid #e35d5d55;
+  animation: gl-vs-away-pulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.gl-vs-clocks.is-float .gl-vs-clock.is-back .gl-vs-clock-face {
+  animation: gl-vs-away-back 480ms cubic-bezier(.2,.75,.2,1);
+}
+@keyframes gl-vs-away-morph {
+  0% { opacity: 0; filter: blur(6px); transform: scale(0.72) rotateX(55deg); }
+  55% { opacity: 1; filter: blur(0); transform: scale(1.06) rotateX(0deg); }
+  100% { opacity: 1; filter: blur(0); transform: scale(1) rotateX(0deg); }
+}
+@keyframes gl-vs-away-back {
+  0% { opacity: 0; filter: blur(5px); transform: scale(1.12); }
+  100% { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+@keyframes gl-vs-away-pulse {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.06); }
+}
+
+.gl-vs-away { display: none !important; }
+
+.mul-cd-face { display: none !important; }
+
+.gl-vs-mull-cd {
+  position: fixed;
+  top: max(18px, calc(env(safe-area-inset-top) + 8px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 190;
+  pointer-events: none;
+  font-family: Cinzel, serif;
+  font-size: clamp(1.8rem, 7vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #f0d78a;
+  text-shadow: 0 0 18px #c9a227aa, 0 6px 18px #000c;
+  font-variant-numeric: tabular-nums;
+}
+.gl-vs-mull-cd.is-low { color: #ff6b6b; }
+.gl-vs-mull-cd[hidden] { display: none !important; }
+
+html:has(.mul-root) .gl-vs-clocks-float,
+html:has(.coin-root) .gl-vs-clocks-float,
+html:has(.gl-vs-kickoff) .gl-vs-clocks-float,
+html:has(.over-root) .gl-vs-clocks-float,
+html:has(.mul-root) .gl-vs-shot,
+html:has(.coin-root) .gl-vs-shot {
+  display: none !important;
+}
+
+.gl-vs-kickoff {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 42%, #5a1a12ee 0%, #12080cf2 62%, #07050af8 100%);
+  pointer-events: none;
+  animation: gl-vs-kick-in 280ms ease-out;
+}
+.gl-vs-kickoff.is-out {
+  animation: gl-vs-kick-out 420ms ease-in forwards;
+}
+.gl-vs-kickoff-burst {
+  position: absolute;
+  inset: 18% 8%;
+  background:
+    repeating-conic-gradient(from 0deg, #c9a22733 0 8deg, transparent 8deg 16deg);
+  opacity: 0.45;
+  mask-image: radial-gradient(circle at 50% 50%, #000 0 28%, transparent 70%);
+  animation: gl-vs-kick-spin 8s linear infinite;
+}
+.gl-vs-kickoff-kicker {
+  position: relative;
+  margin: 0 0 8px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: #e8d48a;
+}
+.gl-vs-kickoff h2 {
+  position: relative;
+  margin: 0;
+  font-family: Cinzel, serif;
+  font-size: clamp(2.4rem, 10vw, 4.4rem);
+  letter-spacing: 0.08em;
+  color: #fff4d4;
+  text-shadow:
+    0 0 0 3px #8b1e1e,
+    0 4px 0 #8b1e1e,
+    0 10px 28px #000a,
+    0 0 32px #c9a227aa;
+  transform: rotate(-3deg);
+}
+.gl-vs-kickoff-sub {
+  position: relative;
+  margin: 14px 0 0;
+  color: #e8dcc8;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+@keyframes gl-vs-kick-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes gl-vs-kick-out {
+  to { opacity: 0; }
+}
+@keyframes gl-vs-kick-spin {
+  to { transform: rotate(360deg); }
+}
+
+html.gl-versus-solo .gl-vs-root,
+html.gl-versus-solo #gl-vs-portal {
+  display: none !important;
+}
+
+html.gl-versus-fight .fight-fs,
+html.gl-versus-solo .fight-fs,
+html.gl-versus-on .fight-fs,
+html.gl-versus-on .vs-root {
+  z-index: 120 !important;
+}
+html.gl-versus-fight .fight-sheet,
+html.gl-versus-solo .fight-sheet,
+html.gl-versus-on .fight-sheet,
+html.gl-versus-fight .fight-sheet-scrim,
+html.gl-versus-solo .fight-sheet-scrim,
+html.gl-versus-on .fight-sheet-scrim,
+html.gl-versus-fight .fight-sheet-card,
+html.gl-versus-solo .fight-sheet-card,
+html.gl-versus-on .fight-sheet-card {
+  z-index: 160 !important;
+}
+html.gl-versus-fight .trash-root,
+html.gl-versus-solo .trash-root,
+html.gl-versus-on .trash-root,
+html.gl-versus-fight .zoom-root,
+html.gl-versus-solo .zoom-root,
+html.gl-versus-on .zoom-root {
+  z-index: 180 !important;
+}
+html.gl-versus-fight .hand-peek-hero,
+html.gl-versus-solo .hand-peek-hero,
+html.gl-versus-on .hand-peek-hero {
+  z-index: 150 !important;
+}
+html.gl-versus-fight .fight-burger,
+html.gl-versus-solo .fight-burger,
+html.gl-versus-on .fight-burger {
+  z-index: 50 !important;
+}
+html.gl-versus-fight .coin-root,
+html.gl-versus-solo .coin-root,
+html.gl-versus-on .coin-root {
+  z-index: 80 !important;
+}
+html.gl-versus-fight .mul-root,
+html.gl-versus-solo .mul-root,
+html.gl-versus-on .mul-root {
+  z-index: 80 !important;
+}
+
+.mul-cd {
+  margin-left: .55rem;
+  color: #f0d78a;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .06em;
+}
+.mul-title { display: flex; align-items: baseline; gap: .15rem; }
+
+.gl-vs-shot {
+  position: fixed;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  z-index: 146;
+  pointer-events: none;
+  font-family: Cinzel, serif;
+  font-size: clamp(64px, 18vw, 120px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #f0d78a;
+  text-shadow: 0 0 24px #c9a227aa, 0 8px 28px #000c;
+  animation: gl-vs-shot-in 180ms ease-out;
+}
+.gl-vs-shot.is-low { color: #ff6b6b; text-shadow: 0 0 24px #e35d5daa, 0 8px 28px #000c; }
+.gl-vs-shot[hidden] { display: none !important; }
+@keyframes gl-vs-shot-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(1.18); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.gl-vs-away {
+  position: fixed;
+  inset: 0;
+  z-index: 170;
+  display: grid;
+  place-items: center;
+  padding: 24px 18px;
+  background: #070b14a8;
+  pointer-events: none;
+}
+.gl-vs-away[hidden] { display: none !important; }
+.gl-vs-away-card {
+  width: min(360px, 100%);
+  padding: 22px 20px 20px;
+  border-radius: 22px;
+  border: 1px solid #c9a22766;
+  background: linear-gradient(#161c28ee, #0c121af5);
+  text-align: center;
+  color: #e8dcc8;
+}
+.gl-vs-away-title {
+  margin: 0 0 8px;
+  font-family: Cinzel, serif;
+  color: #f0d78a;
+  font-size: 1.05rem;
+}
+.gl-vs-away-copy { margin: 0; color: #c9d0da; font-size: .92rem; }
+.gl-vs-away-time {
+  margin: 12px 0 0;
+  color: #e8d48a;
+  font-family: Cinzel, serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.gl-vs-resume {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483600;
+  display: grid;
+  place-items: center;
+  padding: 24px 18px;
+  background: #05080ef2;
+  pointer-events: auto;
+}
+.gl-vs-resume[hidden] { display: none !important; }
+.gl-vs-resume-card {
+  width: min(380px, 100%);
+  padding: 22px 20px 18px;
+  border-radius: 22px;
+  border: 1px solid #c9a22766;
+  background: linear-gradient(#161c28ee, #0c121af5);
+  text-align: center;
+  color: #e8dcc8;
+}
+.gl-vs-resume-card h3 {
+  margin: 0 0 8px;
+  font-family: Cinzel, serif;
+  color: #f0d78a;
+}
+.gl-vs-resume-card p { margin: 0 0 14px; }
+.gl-vs-resume-kicker {
+  margin: 0 0 6px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: #c9a227;
+}
+.gl-vs-resume-card button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(#f0d78a, #c9a227);
+  color: #102030;
+  font-weight: 700;
+}
+.gl-vs-ghost {
+  margin-left: 8px;
+  background: transparent !important;
+  color: #e8dcc8 !important;
+  border: 1px solid #c9a22766 !important;
+}

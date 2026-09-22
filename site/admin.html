@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Administration des cartes — Grand Line TCG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Administrateur — Grand Line TCG</title>
 <link rel="icon" href="/favicon.svg" />
 <style>
   :root{color-scheme:dark}
@@ -14,15 +14,23 @@
   button{font-family:inherit;cursor:pointer}
   input,select,textarea{font-family:inherit}
 
-  .wrap{max-width:1120px;margin:0 auto;padding:1.1rem 1rem 3rem}
+  .wrap{width:min(100%, 1120px);margin:0 auto;padding:
+    max(1.1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(3rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))}
+  .btn{height:2.5rem;min-height:44px;padding:0 1rem;border-radius:10px;border:0;background:#c9a227;
+    color:#0a101c;font-weight:700;font-size:.85rem;white-space:nowrap}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%, 150px),1fr));gap:.8rem}
+  .overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;
+    background:#05070ccc;padding:0;padding-bottom:env(safe-area-inset-bottom)}
+  .form-card{width:min(100%, 560px);max-height:94dvh;overflow-y:auto;border-top:1px solid #f3eee438;
+    border-radius:24px 24px 0 0;background:linear-gradient(#1a2130,#121820);padding:1rem 1.1rem 1.6rem;
+    box-shadow:0 -18px 40px #0009}
   header{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:.6rem;min-width:0}
   h1{font-family:Cinzel,serif;font-size:1.05rem;letter-spacing:.03em;color:#c9a227;margin:0;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   a.back{font-size:.78rem;color:#6b7380;text-decoration:none;white-space:nowrap}
 
-  .btn{height:2.5rem;padding:0 1rem;border-radius:10px;border:0;background:#c9a227;
-    color:#0a101c;font-weight:700;font-size:.85rem;white-space:nowrap}
   .btn.ghost{background:none;border:1px solid #f3eee438;color:#f3eee4;font-weight:600}
 
   .toolbar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem}
@@ -36,7 +44,6 @@
   .status.err{color:#f5a3a3}
   .count{margin:0 0 .8rem;font-size:.76rem;color:#6b7380}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem}
   .tile{position:relative;border:1px solid #f3eee41f;border-radius:14px;background:#172033;overflow:hidden;
     display:flex;flex-direction:column}
   .tile-img{position:relative;width:100%;aspect-ratio:63/88;background:#0b1018;overflow:hidden}
@@ -54,11 +61,6 @@
   .gate{display:flex;align-items:center;justify-content:center;min-height:100dvh;text-align:center;
     padding:2rem;color:#9aa3b2}
 
-  .overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;
-    background:#05070ccc;padding:0}
-  .form-card{width:100%;max-width:560px;max-height:94dvh;overflow-y:auto;border-top:1px solid #f3eee438;
-    border-radius:24px 24px 0 0;background:linear-gradient(#1a2130,#121820);padding:1rem 1.1rem 1.6rem;
-    box-shadow:0 -18px 40px #0009}
   .form-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
   .form-head h2{margin:0;font-family:Cinzel,serif;font-size:1rem}
   .form-head button{background:none;border:0;color:#6b7380;font-size:1.3rem;line-height:1}
@@ -97,15 +99,109 @@
 
   label.check{display:flex;align-items:center;gap:.5rem;font-size:.84rem;color:#9aa3b2;margin-bottom:.3rem}
 
-  /* Desktop: centered modal instead of a bottom sheet, two-column form body */
+  .tabs{display:flex;gap:6px;margin:0 0 1rem;border-bottom:1px solid #c9a22733}
+  .tab{flex:0 0 auto;min-height:40px;padding:.55rem 1rem;background:none;border:0;border-bottom:2px solid transparent;
+    color:#8b93a0;font:700 13px inherit;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+  .tab.on{color:#e8d48a;border-bottom-color:#c9a227}
+  .u-list{display:grid;gap:.7rem}
+  .u-card{border:1px solid #c9a22733;border-radius:14px;background:#0e141c;padding:.85rem 1rem}
+  .u-card.is-ban{opacity:.7;border-color:#c81e1e66}
+  .u-top{display:flex;align-items:center;gap:.6rem}
+  .u-ban{background:#c81e1e;color:#fff;font-size:.65rem;font-style:normal;font-weight:800;
+    letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:2px 8px}
+  .u-role{font-size:.65rem;font-style:normal;font-weight:800;letter-spacing:.06em;
+    text-transform:uppercase;border-radius:99px;padding:2px 8px;border:1px solid #c9a22766;
+    color:#e8d48a;background:#c9a22722}
+  .u-role.is-user{border-color:#6b738066;color:#9aa3b2;background:#ffffff0a}
+  .u-role.is-moderator{border-color:#4d8fd688;color:#8ec4f0;background:#4d8fd622}
+  .u-role.is-admin{border-color:#c9a227aa;color:#102030;background:linear-gradient(#f0d78a,#c9a227)}
+  .u-role.is-owner{border-color:#e8d48a;color:#e8d48a;background:#c9a22733;
+    box-shadow:0 0 10px #c9a22744}
+  .u-role-help{margin:.2rem 0 0;font-size:.78rem;color:#8b93a0;line-height:1.4}
+  .u-mail,.u-code{margin:.25rem 0 0;font-size:.78rem;color:#c9b58a}
+  .u-actions{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem}
+  .u-actions button{height:2.1rem;padding:0 .7rem;border-radius:999px;border:1px solid #c9a22744;
+    background:#141b26;color:#f4ead4;font-size:.72rem;font-weight:700}
+  .u-actions button.danger{border-color:#c81e1e66;color:#f5a3a3}
+
   @media (min-width:760px){
-    .overlay{align-items:center}
-    .form-card{max-width:760px;border-radius:22px;max-height:88dvh}
+    .overlay{align-items:center;padding:1.5rem}
+    .form-card{max-width:760px;width:min(92vw,760px);border-radius:22px;max-height:88dvh;border:1px solid #f3eee438}
     .form-body{grid-template-columns:170px 1fr;align-items:start}
     .form-foot{position:static}
   }
+  @media (min-width:1120px){
+    .wrap{max-width:1200px;padding:1.6rem 1.6rem 3rem}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+    .overlay{align-items:center;padding:2rem}
+    .form-card{max-width:800px;width:min(92vw,800px);border-radius:22px}
+  }
   @media (max-width:420px){
     .grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+    .field-grid,.field-grid.g4{grid-template-columns:1fr 1fr}
+  }
+  @media (orientation:landscape) and (max-height:500px){
+    .overlay{align-items:center}
+    .form-card{max-height:96dvh;border-radius:16px;width:min(96vw,720px)}
+    header{margin-bottom:.5rem}
+  }
+
+  /* Confirm popup */
+  .overlay.is-confirm{z-index:40;align-items:center;justify-content:center;padding:1.2rem}
+  .confirm-card{
+    width:min(100%, 380px);border:1px solid #c9a22766;border-radius:20px;
+    background:linear-gradient(#1a2130,#0e141c);padding:1.2rem 1.15rem 1.15rem;
+    box-shadow:0 18px 40px #000a,0 0 24px #c9a22722,inset 0 1px #f4ead422
+  }
+  .confirm-card h2{margin:0 0 .55rem;font-family:Cinzel,serif;font-size:1.02rem;color:#e8d48a;letter-spacing:.04em}
+  .confirm-card p{margin:0 0 1.1rem;font-size:.9rem;line-height:1.45;color:#c9b58a}
+  .confirm-card .form-foot{position:static;margin:0;padding:0;background:none}
+  .form-foot .save.is-danger{background:#c81e1e;color:#fff}
+
+  /* Mobile-first admin */
+  @media (max-width:759px){
+    html,body{overflow-x:hidden;max-width:100%}
+    .wrap{padding:max(10px, env(safe-area-inset-top)) 12px max(20px, env(safe-area-inset-bottom))}
+    .admin-chrome{
+      position:sticky;top:0;z-index:6;background:linear-gradient(#121820 70%,#0b1018ee);
+      padding-bottom:0;border-bottom:1px solid #c9a22722
+    }
+    .admin-chrome header{margin-bottom:.45rem;align-items:center}
+    h1{font-size:.98rem;letter-spacing:.06em}
+    a.back{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-height:36px;padding:0 12px;border-radius:999px;
+      background:linear-gradient(#f0d78a,#c9a227);color:#102030;font:700 12px Figtree,sans-serif;
+      text-decoration:none
+    }
+    .tabs{gap:0;margin:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{flex:1 0 auto;min-height:44px;padding:.6rem .9rem;font-size:12px}
+    .toolbar{flex-direction:column;align-items:stretch;gap:.45rem}
+    .search{flex:none;width:100%;height:46px}
+    .search input,.field input,.field select,.field textarea{font-size:16px}
+    select.filter{width:100%;height:46px}
+    .btn{width:100%;height:46px;min-height:46px}
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}
+    .tile-actions{top:4px;right:4px;gap:.25rem}
+    .tile-actions button{width:36px;height:36px;min-width:36px;font-size:.95rem}
+    .tile-name{font-size:.74rem}
+    .tile-meta{font-size:.62rem}
+    .u-card{padding:.85rem .8rem}
+    .u-top{flex-wrap:wrap;gap:.4rem}
+    .u-actions{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+    .u-actions button{height:44px;min-height:44px;width:100%;padding:0 .4rem;font-size:.78rem}
+    .field-grid,.field-grid.g4{grid-template-columns:1fr 1fr}
+    .overlay{align-items:flex-end}
+    .form-card{
+      width:100%;max-height:92dvh;border-radius:20px 20px 0 0;
+      padding:14px 14px calc(14px + env(safe-area-inset-bottom))
+    }
+    .form-body{grid-template-columns:1fr;gap:.75rem}
+    .preview-img{width:110px}
+    .form-foot{position:sticky;bottom:-14px;gap:.5rem;padding:.55rem 0 .1rem}
+    .form-foot button{min-height:48px;height:48px}
+    .gate{padding:1.4rem}
   }
 </style>
 </head>
@@ -121,9 +217,11 @@
       return {
         id: "", name: "", set: "", setName: "", rarity: "C", colors: [], type: "Character",
         life: null, cost: null, power: null, counter: null, traits: [], attr: null,
-        text: "", textEn: "", image: "", parallel: false, src: "custom",
+        text: "", textEn: "", image: "", parallel: false, src: "custom", variant: "",
       };
     }
+
+    let me = { isAdmin: false, canCards: false, canUsers: false, canRoles: false, role: "user" };
 
     async function boot() {
       let status;
@@ -138,42 +236,126 @@
         app.innerHTML = '<div class="gate">Connecte-toi pour accéder à l\'administration.<br><br><a class="back" href="/login.html">Se connecter →</a></div>';
         return;
       }
-      if (!status.isAdmin) {
-        app.innerHTML = '<div class="gate">Accès réservé à l\'administrateur du jeu.</div>';
+      const staff = !!(status.canCards || status.canUsers || status.isAdmin);
+      if (!staff) {
+        app.innerHTML = '<div class="gate">Accès réservé à l\'équipe du jeu.</div>';
         return;
       }
+      me = {
+        isAdmin: !!status.isAdmin,
+        canCards: status.canCards !== false && (status.canCards || status.role === "admin" || status.role === "owner" || (!status.role && status.isAdmin)),
+        canUsers: status.canUsers !== false && (status.canUsers || status.isAdmin),
+        canRoles: !!status.canRoles,
+        role: status.role || "admin",
+        id: status.id,
+      };
+      if (!me.canCards && me.canUsers) showTab("users");
+      else showTab(location.hash === "#users" ? "users" : "cards");
+    }
+
+    function chrome(active) {
+      const cardsTab = me.canCards
+        ? `<button type="button" class="tab ${active === "cards" ? "on" : ""}" data-tab="cards">Cartes</button>`
+        : "";
+      const usersTab = me.canUsers
+        ? `<button type="button" class="tab ${active === "users" ? "on" : ""}" data-tab="users">Utilisateurs</button>`
+        : "";
+      return `
+        <div class="wrap admin-chrome" style="padding-bottom:0">
+          <header>
+            <div class="brand"><h1>Administrateur</h1></div>
+            <a class="back" href="/">Retour</a>
+          </header>
+          <div class="tabs">${cardsTab}${usersTab}</div>
+        </div>
+        <div id="admin-body"></div>`;
+    }
+
+    function bindTabs(active) {
+      app.querySelectorAll("[data-tab]").forEach((btn) => {
+        btn.onclick = () => showTab(btn.getAttribute("data-tab"));
+      });
+    }
+
+    function showTab(which) {
+      if (which === "users" && me.canUsers) {
+        history.replaceState(null, "", "#users");
+        app.className = "";
+        app.innerHTML = chrome("users");
+        bindTabs("users");
+        if (window.GLAdminUsers) window.GLAdminUsers.render(document.getElementById("admin-body"));
+        else {
+          const s = document.createElement("script");
+          s.src = "/admin-users.js?v=4";
+          s.onload = () => window.GLAdminUsers.render(document.getElementById("admin-body"));
+          document.body.appendChild(s);
+        }
+        return;
+      }
+      if (!me.canCards) {
+        showTab("users");
+        return;
+      }
+      history.replaceState(null, "", "#cards");
       renderEditor();
     }
 
     async function fetchCards() {
       const [baseRes, overridesRes] = await Promise.all([
-        fetch("/data/catalog.json?admin=1"),
-        fetch("/api/card-overrides", { credentials: "include" }),
+        fetch("/data/catalog.json?admin=1", { cache: "no-store" }),
+        fetch("/api/card-overrides", { credentials: "include", cache: "no-store" }),
       ]);
       const base = await baseRes.json();
       const overrides = overridesRes.ok ? await overridesRes.json() : [];
-      const byId = new Map(base.cards.map((c) => [c.id, c]));
+      const byId = new Map((base.cards || []).map((c) => [c.id, { ...c }]));
       for (const o of overrides) {
+        if (!o || !o.id) continue;
         if (o.action === "delete") byId.delete(o.id);
-        else if (o.card) byId.set(o.id, o.card);
+        else if (o.card) byId.set(o.id, { ...(byId.get(o.id) || {}), ...o.card, id: o.id });
       }
-      return Array.from(byId.values());
+      return {
+        cards: Array.from(byId.values()),
+        boosters: base.boosters || [],
+        starters: base.starters || [],
+      };
     }
 
     function esc(s) {
       return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     }
 
+    function confirmBox(title, message, opts) {
+      opts = opts || {};
+      return new Promise((resolve) => {
+        const overlay = document.createElement("div");
+        overlay.className = "overlay is-confirm";
+        overlay.innerHTML =
+          '<div class="confirm-card">' +
+            "<h2>" + esc(title) + "</h2>" +
+            "<p>" + esc(message) + "</p>" +
+            '<div class="form-foot">' +
+              '<button type="button" class="cancel" data-no>' + esc(opts.cancel || "Annuler") + "</button>" +
+              '<button type="button" class="save' + (opts.danger ? " is-danger" : "") + '" data-yes>' +
+                esc(opts.ok || "Confirmer") +
+              "</button>" +
+            "</div>" +
+          "</div>";
+        const done = (v) => { overlay.remove(); resolve(v); };
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay || e.target.closest("[data-no]")) done(false);
+          if (e.target.closest("[data-yes]")) done(true);
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+    window.GLAdminConfirm = confirmBox;
+
     function renderEditor() {
       app.className = "";
-      app.innerHTML = `
-        <div class="wrap">
-          <header>
-            <div class="brand"><h1>Administration des cartes</h1></div>
-            <div style="display:flex;gap:.5rem;align-items:center">
-              <a class="back" href="/">← Jeu</a>
-              <button class="btn" id="new-card">+ Nouvelle carte</button>
-            </div>
+      app.innerHTML = chrome("cards") + `
+        <div class="wrap" style="padding-top:0">
+          <header style="margin:0 0 .8rem;justify-content:flex-end">
+            <button class="btn" id="new-card">+ Nouvelle carte</button>
           </header>
           <div class="toolbar">
             <div class="search"><span>🔍</span><input id="q" placeholder="Rechercher par nom, id ou set…" /></div>
@@ -185,7 +367,9 @@
           <div class="grid" id="list"></div>
         </div>
       `;
+      bindTabs("cards");
       let cards = [];
+      let packs = [];
       let q = "";
       let typeFilter = "";
       let colorFilter = "";
@@ -205,7 +389,7 @@
         let filtered = cards;
         if (query) {
           filtered = filtered.filter(
-            (c) => c.id.toLowerCase().includes(query) || c.name.toLowerCase().includes(query) || c.set.toLowerCase().includes(query),
+            (c) => (c.id || "").toLowerCase().includes(query) || (c.name || "").toLowerCase().includes(query) || (c.set || "").toLowerCase().includes(query),
           );
         }
         if (typeFilter) filtered = filtered.filter((c) => c.type === typeFilter);
@@ -240,12 +424,36 @@
       }
 
       async function refresh() {
-        cards = await fetchCards();
+        const data = await fetchCards();
+        cards = data.cards || data;
+        packs = [...(data.boosters || []), ...(data.starters || [])];
         renderList();
       }
 
+      function purgeLiveCatalog() {
+        try {
+          navigator.serviceWorker?.controller?.postMessage({ type: "purge-catalog" });
+        } catch {}
+        try {
+          const req = indexedDB.open("gl-tcg", 1);
+          req.onsuccess = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains("kv")) return;
+            const tx = db.transaction("kv", "readwrite");
+            const store = tx.objectStore("kv");
+            store.delete("catalog:fr-cards-opcollec-13");
+            store.delete("catalog:fr-cards-opcollec-14");
+          };
+        } catch {}
+      }
+
       async function removeCard(card) {
-        if (!window.confirm(`Supprimer « ${card.name} » (${card.id}) du jeu ?`)) return;
+        const ok = await confirmBox(
+          "Supprimer la carte",
+          "Supprimer définitivement « " + card.name + " » (" + card.id + ") du jeu ?",
+          { danger: true, ok: "Supprimer" },
+        );
+        if (!ok) return;
         try {
           const r = await fetch("/api/admin/cards?id=" + encodeURIComponent(card.id), {
             method: "DELETE",
@@ -253,6 +461,7 @@
           });
           const data = await r.json();
           if (!r.ok) throw new Error(data.error || "Échec de la suppression.");
+          purgeLiveCatalog();
           showStatus(`« ${card.name} » supprimée.`);
           await refresh();
         } catch (ex) {
@@ -271,6 +480,7 @@
           });
           const data = await r.json();
           if (!r.ok) throw new Error(data.error || "Échec de l'enregistrement.");
+          purgeLiveCatalog();
           showStatus(`« ${input.name} » enregistrée.`);
           document.getElementById("overlay")?.remove();
           q = input.id;
@@ -284,10 +494,13 @@
       }
 
       function openForm(card, isNew) {
-        const form = isNew ? blankCard() : { ...card, textEn: card.textEn ?? "" };
+        const form = isNew ? blankCard() : { ...card, textEn: card.textEn ?? "", traits: Array.isArray(card.traits) ? card.traits : [] };
         const overlay = document.createElement("div");
         overlay.className = "overlay";
         overlay.id = "overlay";
+        const setOptions = packs
+          .map((p) => `<option value="${esc(p.id)}">${esc(p.id)} — ${esc(p.name)}</option>`)
+          .join("");
         overlay.innerHTML = `
           <div class="form-card">
             <div class="form-head">
@@ -298,8 +511,8 @@
               <div class="preview">
                 <div class="preview-img" id="preview-img"><div class="ph">Aucune image</div></div>
                 <div class="field" style="width:100%;margin:0">
-                  <span>Image (chemin ou URL)</span>
-                  <input id="f-image" placeholder="/cards-fr/OP01-999.webp ou https://…" />
+                  <span>Emplacement de l'image (chemin ou URL)</span>
+                  <input id="f-image" placeholder="/cards-fr/OP01-001.webp ou https://…" />
                 </div>
                 <label class="check" style="width:100%"><input type="checkbox" id="f-parallel" /> Carte parallèle / alternative</label>
               </div>
@@ -309,9 +522,13 @@
                   <div class="field"><span>Identifiant</span><input id="f-id" placeholder="OP01-999" ${isNew ? "" : "disabled"} /></div>
                   <div class="field"><span>Nom</span><input id="f-name" /></div>
                   <div class="field-grid">
-                    <div class="field"><span>Set</span><input id="f-set" /></div>
-                    <div class="field"><span>Nom du set</span><input id="f-setName" /></div>
+                    <div class="field"><span>Booster</span>
+                      <input id="f-set" list="set-list" placeholder="OP-01" />
+                      <datalist id="set-list">${setOptions}</datalist>
+                    </div>
+                    <div class="field"><span>Nom du booster</span><input id="f-setName" placeholder="Romance Dawn" /></div>
                   </div>
+                  <div class="field"><span>Variante (optionnel)</span><input id="f-variant" placeholder="Classique, Manga, Full Art…" /></div>
                 </fieldset>
                 <fieldset style="margin-bottom:.9rem">
                   <legend>Statistiques</legend>
@@ -355,25 +572,32 @@
         document.body.appendChild(overlay);
 
         const $ = (id) => overlay.querySelector(id);
-        $("#f-id").value = form.id;
-        $("#f-name").value = form.name;
-        $("#f-set").value = form.set;
-        $("#f-setName").value = form.setName;
-        $("#f-rarity").value = form.rarity;
-        $("#f-type").value = form.type;
+        $("#f-id").value = form.id || "";
+        $("#f-name").value = form.name || "";
+        $("#f-set").value = form.set || "";
+        $("#f-setName").value = form.setName || "";
+        $("#f-variant").value = form.variant || "";
+        $("#f-rarity").value = form.rarity || "";
+        $("#f-type").value = TYPES.includes(form.type) ? form.type : (form.type || "Character");
         $("#f-life").value = form.life ?? "";
         $("#f-cost").value = form.cost ?? "";
         $("#f-power").value = form.power ?? "";
         $("#f-counter").value = form.counter ?? "";
-        $("#f-traits").value = form.traits.join(", ");
+        $("#f-traits").value = (form.traits || []).join(", ");
         $("#f-attr").value = form.attr ?? "";
-        $("#f-text").value = form.text;
+        $("#f-text").value = form.text || "";
         $("#f-textEn").value = form.textEn || "";
-        $("#f-image").value = form.image;
-        $("#f-parallel").checked = form.parallel;
+        $("#f-image").value = form.image || "";
+        $("#f-parallel").checked = !!form.parallel;
         $("#f-src").value = form.src || "custom";
 
-        const colors = new Set(form.colors);
+        $("#f-set").addEventListener("input", () => {
+          const id = $("#f-set").value.trim();
+          const pack = packs.find((p) => p.id === id);
+          if (pack && pack.name) $("#f-setName").value = pack.name;
+        });
+
+        const colors = new Set(Array.isArray(form.colors) ? form.colors : []);
         overlay.querySelectorAll(".chip").forEach((chip) => {
           if (colors.has(chip.dataset.c)) chip.classList.add("on");
           chip.onclick = () => {
@@ -415,14 +639,13 @@
           if (e.target === overlay) overlay.remove();
         });
         const saveBtn = overlay.querySelector("#save-form");
-        saveBtn.onclick = () => {
-          saveCard(
-            {
+        saveBtn.onclick = async () => {
+          const payload = {
               id: $("#f-id").value.trim(),
               name: $("#f-name").value.trim(),
               set: $("#f-set").value.trim(),
-              setName: $("#f-setName").value.trim(),
-              rarity: $("#f-rarity").value.trim(),
+              setName: $("#f-setName").value.trim() || $("#f-set").value.trim(),
+              rarity: $("#f-rarity").value.trim() || "C",
               colors: Array.from(colors),
               type: $("#f-type").value,
               life: num($("#f-life").value),
@@ -436,9 +659,29 @@
               image: $("#f-image").value.trim(),
               parallel: $("#f-parallel").checked,
               src: $("#f-src").value.trim() || "custom",
-            },
-            saveBtn,
+              variant: $("#f-variant").value.trim() || undefined,
+          };
+          if (!payload.id || !payload.name) {
+            showStatus("Identifiant et nom obligatoires.", true);
+            return;
+          }
+          if (!payload.set) {
+            showStatus("Le booster est obligatoire.", true);
+            return;
+          }
+          if (!payload.image) {
+            showStatus("L'emplacement de l'image est obligatoire.", true);
+            return;
+          }
+          const ok = await confirmBox(
+            isNew ? "Créer la carte" : "Enregistrer la carte",
+            isNew
+              ? "Créer « " + payload.name + " » (" + payload.id + ") ?"
+              : "Enregistrer les modifications de « " + payload.name + " » ?",
+            { ok: isNew ? "Créer" : "Enregistrer" },
           );
+          if (!ok) return;
+          saveCard(payload, saveBtn);
         };
       }
 

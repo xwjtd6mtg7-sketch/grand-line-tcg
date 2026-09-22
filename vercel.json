@@ -4,7 +4,14 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    {
+      "source": "/cards-fr/:path*",
+      "destination": "https://raw.githubusercontent.com/xwjtd6mtg7-sketch/grand-line-tcg/main/site/cards-fr/:path*"
+    },
     { "source": "/api/auth/:path*", "destination": "/api/auth-handler" },
-    { "source": "/((?!api/|login\\.html|admin\\.html|account-widget\\.js).*)", "destination": "/index.html" }
+    {
+      "source": "/((?!api/)(?!.*\\.[a-zA-Z0-9]+$).*)",
+      "destination": "/index.html"
+    }
   ]
 }

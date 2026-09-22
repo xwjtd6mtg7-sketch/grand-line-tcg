@@ -10,6 +10,7 @@
  * at deploy time by `scripts/migrate.mjs` (see package.json "build"), and to
  * the local PGLite fallback lazily on first query.
  */
+import { mkdirSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -78,7 +79,9 @@ export async function getPglite() {
   if (databaseUrl) throw new Error("getPglite() called while DATABASE_URL is set");
   g.__glPglite__ ??= (async () => {
     const { PGlite } = await import("@electric-sql/pglite");
-    const pg = new PGlite({
+    const dataDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".grok", "pglite");
+    mkdirSync(dataDir, { recursive: true });
+    const pg = new PGlite(dataDir, {
       parsers: { [OID_INT8]: Number, [OID_DATE]: identity, [OID_INTERVAL]: identity },
     });
     await pg.waitReady;

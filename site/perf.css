@@ -1,0 +1,55 @@
+/* Runtime smoothness: cheaper paints, fewer compositing layers, lazy off-screen work. */
+html, body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+}
+img, video, canvas {
+  max-width: 100%;
+  height: auto;
+  decoding: async;
+}
+img {
+  content-visibility: auto;
+}
+.tab-host, .tab-pane.is-on, .home-page, .cmb-page, .coll-hub, .fight-fs {
+  contain: layout;
+}
+.intro-root {
+  contain: strict;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.intro-root.is-out,
+html.gl-entered .intro-root {
+  animation: none !important;
+  display: none !important;
+}
+@media (max-width: 700px) {
+  .intro-glow,
+  .intro-rings {
+    animation-duration: 12s !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-glow,
+  .intro-rings,
+  .intro-logo,
+  .intro-root.is-ready .intro-logo {
+    animation: none !important;
+  }
+}
+@media (hover: none) and (pointer: coarse) {
+  .intro-rings { opacity: 0.1 !important; }
+}
+.cmb-page > .cmb-float {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  padding-left: 14px;
+  padding-right: 14px;
+}

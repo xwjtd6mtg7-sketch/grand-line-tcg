@@ -1,5 +1,5 @@
 import { auth } from "./auth.mjs";
-import { claimOrCheckAdmin } from "./admin.mjs";
+import { resolveRole } from "./admin.mjs";
 
 /** Thrown by `requireAdmin`; callers should reply with `.status` + `.message`. */
 export class HttpError extends Error {
@@ -25,10 +25,30 @@ export async function getSessionUser(req) {
   return session?.user ?? null;
 }
 
-/** Require an admin session; throws `HttpError` (401/403) otherwise. */
-export async function requireAdmin(req) {
+async function staffFrom(req) {
   const user = await getSessionUser(req);
   if (!user) throw new HttpError(401, "Unauthorized");
-  if (!(await claimOrCheckAdmin(user.id))) throw new HttpError(403, "Forbidden");
-  return user;
+  const ctx = await resolveRole(user);
+  return { ...user, ...ctx };
+}
+
+/** Any staff role (moderator / admin / founder). */
+export async function requireStaff(req) {
+  const staff = await staffFrom(req);
+  if (!staff.canUsers && !staff.canCards) throw new HttpError(403, "Forbidden");
+  return staff;
+}
+
+/** Users tab: moderator and above. */
+export async function requireUsers(req) {
+  const staff = await staffFrom(req);
+  if (!staff.canUsers) throw new HttpError(403, "Forbidden");
+  return staff;
+}
+
+/** Card catalog: admin and founder. */
+export async function requireAdmin(req) {
+  const staff = await staffFrom(req);
+  if (!staff.canCards) throw new HttpError(403, "Forbidden");
+  return staff;
 }

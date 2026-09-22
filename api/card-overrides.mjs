@@ -1,9 +1,8 @@
-import { getSql } from "./_lib/db.mjs";
+import { loadOverrides } from "./_lib/card-catalog.mjs";
 
 /**
  * Public, read-only: the admin's add/edit/delete list, merged into the live
- * catalog by site/sw.js (the game's own JS never changes). Small payload —
- * safe to fetch on every catalog load.
+ * catalog by the server (/data/catalog.json) and the game store.
  */
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -12,22 +11,11 @@ export default async function handler(req, res) {
     return;
   }
   try {
-    const sql = await getSql();
-    const rows = await sql`select id, action, card from card_overrides order by updated_at asc`;
-    const overrides = rows.map((r) => ({
-      id: r.id,
-      action: r.action,
-      card:
-        r.action === "delete" || r.card == null
-          ? null
-          : typeof r.card === "string"
-            ? JSON.parse(r.card)
-            : r.card,
-    }));
+    const overrides = await loadOverrides();
     res.setHeader("content-type", "application/json; charset=utf-8");
-    res.setHeader("cache-control", "no-store");
+    res.setHeader("cache-control", "no-store, no-cache, must-revalidate");
     res.statusCode = 200;
-    res.end(JSON.stringify(overrides));
+    res.end(JSON.stringify(overrides.map(({ id, action, card }) => ({ id, action, card }))));
   } catch (err) {
     res.statusCode = 500;
     res.setHeader("content-type", "application/json; charset=utf-8");
