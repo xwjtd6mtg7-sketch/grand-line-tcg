@@ -259,9 +259,13 @@ html.gl-social-on .tab-host > #gl-so-root[hidden],
 }
 .gl-so-friends-btn {
   position: relative;
+  left: calc(50% - 122px);
+  bottom: auto;
+  z-index: 4;
   align-self: flex-start;
   min-width: 76px;
   min-height: 58px;
+  margin: 0;
   padding: 8px 12px;
   border-radius: 16px;
   gap: 4px;

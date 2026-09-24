@@ -303,7 +303,39 @@ html.gl-versus-priv .gl-ms-fab { display: none !important; }
   align-items: center;
 }
 .gl-vs-root .filter-sheet.gl-vs-decks { z-index: 140; }
-.gl-vs-decks .deck-pick-check svg { width: 16px; height: 16px; }
+.gl-vs-portal .gl-vs-decks .deck-pick-row {
+  min-height: 88px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+.gl-vs-portal .gl-vs-decks .deck-pick-art,
+.gl-vs-portal .gl-vs-decks .deck-pick-skins,
+.gl-vs-portal .gl-vs-decks .deck-pick-check {
+  flex: none;
+}
+.gl-vs-portal .gl-vs-decks .deck-pick-pack {
+  width: 52px !important;
+  height: 72px !important;
+  min-width: 52px;
+  min-height: 72px;
+  object-fit: cover;
+}
+.gl-vs-portal .gl-vs-decks .deck-pick-skin {
+  width: 34px;
+  height: 48px;
+  flex: none;
+}
+.gl-vs-portal .gl-vs-decks .deck-pick-skin.is-mat {
+  width: 58px;
+  height: 36px;
+  align-self: center;
+}
+.gl-vs-portal .gl-vs-decks .deck-pick-skin img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .gl-vs-decks .filter-float { pointer-events: none; padding-bottom: 12px; }
 .gl-vs-decks .studio-float-save { pointer-events: auto; }
 
@@ -531,6 +563,122 @@ html.gl-versus-priv .gl-ms-fab { display: none !important; }
   background: #121820;
   color: #e8d48a;
   font-size: 15px;
+}
+.gl-road-seek {
+  background: #070b14;
+  padding-top: env(safe-area-inset-top);
+}
+.gl-road-seek .gl-head { display: none; }
+.road-seek-top {
+  position: relative;
+  flex: none;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+  background: transparent;
+}
+.road-seek-top .road-hud {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: 1;
+  background: transparent;
+  padding: 8px 16px 4px;
+}
+.road-seek-top .road-sky-clouds { display: none; }
+.road-seek {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding: 8px 28px 96px;
+}
+.road-seek-region {
+  display: block;
+  width: min(232px, 68vw);
+  height: auto;
+  margin: 6px 0 0;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 10px #021018aa);
+  pointer-events: none;
+  user-select: none;
+}
+.road-seek-compass {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  flex: none;
+  margin: 16px 0 4px;
+  filter: drop-shadow(0 8px 14px #000a);
+}
+.road-seek-dial,
+.road-seek-needle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.road-seek-dial { animation: road-seek-spin 28s linear infinite; }
+.road-seek-kicker {
+  margin: 0 0 8px;
+  font-family: Cinzel, serif;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: #e7c56a;
+}
+.road-seek h3 {
+  margin: 0;
+  max-width: 14ch;
+  font-family: Cinzel, serif;
+  font-size: 24px;
+  font-weight: 650;
+  line-height: 1.12;
+  letter-spacing: 0.03em;
+  color: #f7f1e4;
+}
+.road-seek-sub {
+  margin: 10px 0 0;
+  max-width: 28ch;
+  color: #cbbfa6;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.road-seek-isle {
+  display: block;
+  width: min(168px, 52vw);
+  height: auto;
+  margin: -4px 0 16px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 16px #000a);
+  pointer-events: none;
+  user-select: none;
+}
+html.gl-road-seek .app-nav,
+html.gl-road-seek .app-dock,
+html.gl-road-seek .gl-ms-fab {
+  display: none !important;
+}
+@keyframes road-seek-spin { to { transform: rotate(360deg); } }
+.road-wait-clock {
+  margin: 2px 0 4px;
+  font-family: Cinzel, serif;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: #f3dc96;
+  text-shadow: 0 0 18px #c9a22788;
+}
+.road-wait-bar .cmb-back {
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 500;
 }
 .gl-vs-x {
   display: block;

@@ -175,6 +175,16 @@ function winnerUserId(row, state) {
 
 function settleShot(state) {
   if (!state || state.engine !== "solo" || hasWinner(state) || !state.shotAt) return false;
+  if (state.bot && state.shotSide === "guest") {
+    state.shotSide = "host";
+    state.shotMs = 90 * 1000;
+    state.shotAt = Date.now();
+    if (state.clockSide === "guest") {
+      state.clockSide = "host";
+      state.clockAt = Date.now();
+    }
+    return true;
+  }
   if (remainingShot(state) > 0) return false;
   const side = state.shotSide;
   if (side !== "host" && side !== "guest") return false;
@@ -268,6 +278,10 @@ function settlePresence(state, now) {
   now = now || Date.now();
   if (!state || state.engine !== "solo" || hasWinner(state)) return false;
   ensurePresence(state);
+  if (state.bot) {
+    state.presence.guest = now;
+    state.awaySince.guest = null;
+  }
   let changed = false;
   for (const side of ["host", "guest"]) {
     const away = sideIsAway(state, side, now);
@@ -346,6 +360,7 @@ function viewFor(state, meId, row) {
       hostName: state.hostName,
       guestName: state.guestName,
       endedBy: state.endedBy || null,
+      bot: !!state.bot,
       away: {
         host: sideIsAway(state, "host", now),
         guest: sideIsAway(state, "guest", now),
@@ -494,6 +509,35 @@ function compactDeck(d) {
   const sorted = {};
   for (const k of Object.keys(cards).sort()) sorted[k] = cards[k];
   return { leaderId, cards: sorted, name: d.name || "" };
+}
+
+const BOT_NAMES = [
+  "Capitaine Brume",
+  "Jack la Cale",
+  "Mousse Silex",
+  "Sel le Borgne",
+  "Loup des Récifs",
+  "Nix le Muet",
+  "Ivy Cargaison",
+  "Rook le Faux",
+  "Basile des Calmes",
+  "Tom le Gréement",
+  "Mila la Vigie",
+  "Otto le Fanal",
+  "Pio la Dérive",
+  "Hugo Baraterie",
+  "Cendre du Port",
+  "Nera la Houle",
+];
+
+function botName(id) {
+  let h = 2166136261;
+  const s = String(id || "");
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return BOT_NAMES[(h >>> 0) % BOT_NAMES.length];
 }
 
 function beginMatch(room) {
@@ -648,6 +692,20 @@ function applySoloRelay(state, userId, move) {
       state.endedBy = "concede";
       state.seq = state.seq || [];
       state.seq.push({ n: ++state.seqN, pid, act: { type: "concede" } });
+    }
+    return { ok: true };
+  }
+  if (type === "result") {
+    if (!state.bot) return { error: "Action inconnue." };
+    const w = move.winner;
+    if (w !== 0 && w !== 1) return { error: "Résultat invalide." };
+    if (!hasWinner(state)) {
+      state.winner = w;
+      state.clockSide = null;
+      state.endedBy = "result";
+      state.seq = state.seq || [];
+      state.seqN = (state.seqN || 0) + 1;
+      state.seq.push({ n: state.seqN, pid, act: { type: "vsOver", winner: w } });
     }
     return { ok: true };
   }
@@ -875,6 +933,8 @@ function publicRoom(row, meId) {
     guest: row.guest_id ? { id: row.guest_id, name: row.guest_name } : null,
     winner: row.winner_id || winnerUserId(row, state) || null,
     version: row.version,
+    createdAt: row.created_at ? new Date(row.created_at).toISOString() : null,
+    bot: !!(state && state.bot),
     you: meId === row.host_id ? "host" : meId === row.guest_id ? "guest" : null,
     view: state ? viewFor(state, meId, row) : null,
   };
@@ -1172,7 +1232,125 @@ export default async function handler(req, res) {
     return json(res, 200, publicRoom(fresh, user.id));
   }
 
+  if (action === "queue") {
+    const deck = body.deck;
+    if (!deck || !deck.leader) return json(res, 400, { error: "deck", message: "Choisis un deck." });
+    const active = parseState((
+      await sql.query(
+        `select * from versus_rooms
+          where status = 'play' and mode = 'road' and (host_id = $1 or guest_id = $1)
+          order by updated_at desc limit 1`,
+        [user.id],
+      )
+    )[0]);
+    if (active && active.state && !hasWinner(active.state)) {
+      return json(res, 200, publicRoom(active, user.id));
+    }
+    const other = parseState((
+      await sql.query(
+        `select * from versus_rooms
+          where mode = 'road' and status = 'wait' and host_id <> $1
+            and created_at > now() - interval '10 minutes'
+          order by created_at asc limit 1`,
+        [user.id],
+      )
+    )[0]);
+    if (other) {
+      await sql.query(
+        "delete from versus_rooms where host_id = $1 and status = 'wait' and mode = 'road'",
+        [user.id],
+      );
+      other.guest_id = user.id;
+      other.guest_name = user.name || "Pirate";
+      other.guest_deck = deck;
+      if (!compactDeck(other.host_deck) || !compactDeck(deck)) {
+        return json(res, 400, { error: "deck", message: "Impossible de lire un des decks." });
+      }
+      other.state = beginMatch(other);
+      const upd = await sql.query(
+        `update versus_rooms
+            set guest_id = $2, guest_name = $3, guest_deck = $4::jsonb,
+                state = $5::jsonb, status = 'play', version = version + 1, updated_at = now()
+          where id = $1 and status = 'wait'
+          returning id`,
+        [other.id, user.id, other.guest_name, JSON.stringify(deck), JSON.stringify(other.state)],
+      );
+      if (upd[0]) {
+        const fresh = parseState(await loadRoom(sql, other.id));
+        return json(res, 200, publicRoom(fresh, user.id));
+      }
+    }
+    const mine = parseState((
+      await sql.query(
+        `select * from versus_rooms
+          where host_id = $1 and status = 'wait' and mode = 'road'
+          order by created_at desc limit 1`,
+        [user.id],
+      )
+    )[0]);
+    if (mine) return json(res, 200, publicRoom(mine, user.id));
+    let idNew = roomId();
+    for (let i = 0; i < 6; i++) {
+      try {
+        await sql.query(
+          `insert into versus_rooms (id, password, mode, status, host_id, host_name, host_deck)
+           values ($1, null, 'road', 'wait', $2, $3, $4::jsonb)`,
+          [idNew, user.id, user.name || "Pirate", JSON.stringify(deck)],
+        );
+        break;
+      } catch (e) {
+        idNew = roomId();
+        if (i === 5) throw e;
+      }
+    }
+    const created = parseState(await loadRoom(sql, idNew));
+    return json(res, 200, publicRoom(created, user.id));
+  }
+
+  if (action === "bot") {
+    const rid = String(body.id || id || "").toUpperCase().slice(0, 16);
+    if (!rid) return json(res, 400, { error: "id" });
+    const row = parseState(await loadRoom(sql, rid));
+    if (!row) return json(res, 404, { error: "not_found", message: "Salon introuvable." });
+    if (row.host_id !== user.id) return json(res, 403, { error: "forbidden" });
+    if (row.mode !== "road") return json(res, 409, { error: "mode" });
+    if (row.status === "play" && row.guest_id) {
+      return json(res, 200, publicRoom(row, user.id));
+    }
+    if (row.status !== "wait" || row.guest_id) {
+      return json(res, 409, { error: "busy", message: "Ce duel n'attend plus." });
+    }
+    const deck = row.host_deck;
+    if (!compactDeck(deck)) return json(res, 400, { error: "deck", message: "Impossible de lire le deck." });
+    const name = botName(row.id);
+    const guestId = "bot-" + row.id;
+    const guestDeck = JSON.parse(JSON.stringify(deck));
+    row.guest_id = guestId;
+    row.guest_name = name;
+    row.guest_deck = guestDeck;
+    const state = beginMatch(row);
+    state.bot = true;
+    const upd = await sql.query(
+      `update versus_rooms
+          set guest_id = $2, guest_name = $3, guest_deck = $4::jsonb,
+              state = $5::jsonb, status = 'play', version = version + 1, updated_at = now()
+        where id = $1 and status = 'wait' and guest_id is null and host_id = $6
+          and created_at <= now() - interval '45 seconds'
+        returning id`,
+      [row.id, guestId, name, JSON.stringify(guestDeck), JSON.stringify(state), user.id],
+    );
+    if (!upd[0]) {
+      const fresh = parseState(await loadRoom(sql, rid));
+      if (fresh && fresh.host_id === user.id && fresh.status === "play") {
+        return json(res, 200, publicRoom(fresh, user.id));
+      }
+      return json(res, 409, { error: "early", message: "Encore un instant." });
+    }
+    const fresh = parseState(await loadRoom(sql, rid));
+    return json(res, 200, publicRoom(fresh, user.id));
+  }
+
   return json(res, 400, { error: "action" });
 }
 
-export { applyMove, beginMatch, settleIdle, settlePresence, remainingClock, viewFor, compactDeck, hasWinner, winnerUserId, sideIsAway, markHere, AWAY_AFTER, FORFEIT_AFTER };
+export { applyMove, beginMatch, settleIdle, settlePresence, remainingClock, viewFor, compactDeck, hasWinner, winnerUserId, sideIsAway, markHere, AWAY_AFTER, FORFEIT_AFTER, botName };

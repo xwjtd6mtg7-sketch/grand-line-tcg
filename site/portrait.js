@@ -604,7 +604,7 @@
       link.rel = "stylesheet";
       document.head.appendChild(link);
     }
-    link.href = "/portrait.css?v=24";
+    link.href = "/portrait.css?v=34";
   }
 
   function boot() {

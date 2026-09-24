@@ -49,11 +49,12 @@
   }
 
   if (!document.querySelector('script[src^="/music.js"]')) injectLazyScript("/music.js?v=30");
-  injectLazyScript("/portrait.js?v=23");
+  injectLazyScript("/portrait.js?v=33");
   injectLazyScript("/mouse.js?v=48");
-  injectLazyScript("/profile.js?v=26");
-  injectLazyScript("/social.js?v=26");
-  injectLazyScript("/versus.js?v=14");
+  injectLazyScript("/profile.js?v=27");
+  injectLazyScript("/social.js?v=29");
+  injectLazyScript("/road.js?v=57");
+  injectLazyScript("/versus.js?v=34");
   injectLazyScript("/missions.js?v=11");
   injectLazyScript("/cloud-save.js?v=8");
 
@@ -85,7 +86,7 @@
       return;
     }
     var btn = t.closest("a,button");
-    if (btn && btn.closest(".coll-hub")) {
+    if (btn && btn.classList.contains("coll-hub-tile") && /Decks/i.test((btn.textContent || "").trim())) {
       e.preventDefault();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
       goPath("/decks");

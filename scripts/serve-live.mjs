@@ -70,6 +70,7 @@ async function handleApi(req, res) {
       "/api/catalog": "../api/catalog.mjs",
       "/api/social": "../api/social.mjs",
       "/api/versus": "../api/versus.mjs",
+      "/api/road": "../api/road.mjs",
       "/api/progress": "../api/progress.mjs",
     };
     const file = map[urlPath];

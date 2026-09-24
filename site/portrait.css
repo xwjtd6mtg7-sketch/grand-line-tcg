@@ -763,3 +763,156 @@
   max-height: min(90dvh, 800px);
   background: #070B14;
 }
+
+/* Sélection du deck (solo) — même cadre que Road */
+.deck-pick-row {
+  min-height: 76px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid #f0d48a55 !important;
+  border-radius: 16px !important;
+  background: linear-gradient(180deg, #143044, #0c1a26) !important;
+}
+.deck-pick-art { order: 1; flex: none; }
+.deck-pick-skins { order: 2; flex: none; align-items: flex-end; gap: 4px; }
+.deck-pick-meta { order: 3; flex: 1; min-width: 0; }
+.deck-pick-check { order: 4; flex: none; }
+.deck-pick-pack,
+.deck-pick-art .deck-pick-pack {
+  width: 44px !important;
+  height: 60px !important;
+  min-width: 44px !important;
+  min-height: 60px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.deck-pick-skin {
+  width: 30px !important;
+  height: 42px !important;
+  min-width: 30px;
+  min-height: 42px;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.deck-pick-skin.is-mat {
+  width: 56px !important;
+  height: 34px !important;
+  min-width: 56px;
+  min-height: 34px;
+  align-self: center;
+}
+.deck-pick-skin img { width: 100%; height: 100%; object-fit: cover; background: transparent; }
+.deck-pick-name { font-size: 15px; color: #f7f1e4; }
+.deck-pick-stat { color: #d7c39a; }
+.filter-sheet .dossier-grab .play-kicker {
+  color: #f4ead4;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 1px #0008, 0 0 18px #c9a22733;
+  margin: 2px 0 8px !important;
+  font-family: Cinzel, serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+.filter-sheet .dossier-grab .play-kicker::after {
+  content: "";
+  display: block;
+  height: 2px;
+  margin: 8px 8px 0;
+  border-radius: 99px;
+  background: linear-gradient(90deg, transparent, #8a7018 12%, #e8d48a 50%, #8a7018 88%, transparent);
+  box-shadow: 0 0 10px #c9a22755;
+}
+
+.road-scroll,
+.road-brief-body,
+.cmb-body,
+.cmb-body.is-list { scrollbar-width: none !important; }
+.road-scroll::-webkit-scrollbar,
+.road-brief-body::-webkit-scrollbar,
+.cmb-body::-webkit-scrollbar,
+.cmb-body.is-list::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+.cmb-page .cmb-tile {
+  min-height: 92px !important;
+  height: 92px !important;
+  max-height: 92px !important;
+  padding: 14px 10px 12px !important;
+  gap: 8px !important;
+  font-size: 13px !important;
+  letter-spacing: 0.06em !important;
+}
+.cmb-page .cmb-tile .cmb-tile-ico,
+.cmb-page .cmb-tile svg { width: 36px !important; height: 36px !important; }
+
+.cmb-page:not(:has(.cmb-head-sub)) .cmb-back {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Stage posée : le visuel ne doit pas s'écraser (slot inchangé) */
+@media (max-width: 1119px) {
+  .fight-fs .stage-mini.is-filled .stage-crop {
+    position: relative;
+    overflow: hidden;
+  }
+  .fight-fs .stage-mini.is-filled .stage-crop-face {
+    position: absolute !important;
+    inset: 0 !important;
+    left: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    margin: 0 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+  .fight-fs .stage-mini.is-filled .stage-crop-face img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    object-position: center 28% !important;
+  }
+}
+
+/* Stage : pas d'animation (ni révélation, ni coucher/debout). Le slot ne bouge pas. */
+.fight-fs .stage-mini .rest-wrap,
+.fight-fs .stage-mini .rest-wrap.is-rested,
+.fight-fs .stage-mini .rest-wrap.anim-rest,
+.fight-fs .stage-mini .rest-wrap.anim-wake {
+  animation: none !important;
+  transition: none !important;
+}
+.fx-play.fx-stage,
+.fx-reveal.fx-stage {
+  display: none !important;
+}
+
+/* Le DON!! qui vole sur la carte s'efface tout de suite. Le compteur posé reste. */
+.fx-don-give-fly {
+  animation-duration: 0.32s !important;
+  animation-delay: 0s !important;
+}
+.fx-don-give-plus {
+  animation-duration: 0.36s !important;
+  animation-delay: 0.05s !important;
+}
+.fx-don-give-burst {
+  animation-duration: 0.28s !important;
+  animation-delay: 0.06s !important;
+}
+@keyframes don-give-fly {
+  0% { opacity: 0; transform: translate(0) rotate(-18deg) scale(0.55); }
+  35% { opacity: 1; transform: translate(calc(var(--don-dx, 0px) * 0.62), calc(var(--don-dy, 0px) * 0.55 - 8px)) rotate(8deg) scale(1.04); }
+  100% { opacity: 0; transform: translate(var(--don-dx, 0px), var(--don-dy, 0px)) rotate(10deg) scale(0.15); }
+}

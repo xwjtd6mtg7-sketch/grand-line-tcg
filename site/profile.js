@@ -428,10 +428,20 @@
           "<div><b>" + (st.losses || 0) + "</b><span>Défaites</span></div>" +
           "<div><b>" + (st.opened || 0) + "</b><span>Boosters ouverts</span></div>" +
           "<div><b>" + cardCount(st) + "</b><span>Cartes possédées</span></div>" +
+          "<div data-road-stat><b>…</b><span>Log Pose</span></div>" +
         "</div>" +
         '<div class="gl-pf-float"><button type="button" class="gl-pf-ok" data-ok>OK</button></div>' +
       "</div>";
     mountPick(root, pick);
+    if (window.GLRoad && window.GLRoad.refresh) {
+      window.GLRoad.refresh().then(function () {
+        var slot = pick.querySelector("[data-road-stat]");
+        if (!slot) return;
+        var line = window.GLRoad.line();
+        var bits = String(line).split(" · ");
+        slot.innerHTML = "<b>" + (bits[1] || "0").replace(" Log Pose", "") + "</b><span>" + (bits[0] || "Road") + "</span>";
+      });
+    }
     pick.addEventListener("click", function (e) {
       e.stopPropagation();
       if (e.target === pick || e.target.closest("[data-ok]") || e.target.closest("[data-xpick]")) closePick(pick);

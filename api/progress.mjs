@@ -1,5 +1,6 @@
 import { getSql } from "./_lib/db.mjs";
 import { getSessionUser } from "./_lib/require-admin.mjs";
+import { normalizeRoad } from "./_lib/road.mjs";
 
 const MAX_BYTES = 1_500_000;
 const TCG_KEYS = [
@@ -189,6 +190,26 @@ function mergeMissions(a, b) {
   };
 }
 
+function mergeRoad(a, b) {
+  if (!a && !b) return null;
+  const left = normalizeRoad(a);
+  const right = normalizeRoad(b);
+  const claimed = { ...left.claimed, ...right.claimed };
+  const settled = [...new Set([...(left.settled || []), ...(right.settled || [])])].slice(-40);
+  return normalizeRoad({
+    points: Math.max(left.points, right.points),
+    highestPoints: Math.max(left.highestPoints, right.highestPoints),
+    winStreak: Math.max(left.winStreak, right.winStreak),
+    bestStreak: Math.max(left.bestStreak, right.bestStreak),
+    wins: Math.max(left.wins, right.wins),
+    losses: Math.max(left.losses, right.losses),
+    draws: Math.max(left.draws, right.draws),
+    claimed,
+    settled,
+    introSeen: !!(left.introSeen || right.introSeen),
+  });
+}
+
 function mergeProfile(a, b) {
   const left = a && typeof a === "object" ? a : {};
   const right = b && typeof b === "object" ? b : {};
@@ -242,6 +263,7 @@ function sanitizeBlob(raw) {
       lastShare: src.social.lastShare && typeof src.social.lastShare === "object" ? src.social.lastShare : {},
     };
   }
+  if (src.road && typeof src.road === "object") blob.road = normalizeRoad(src.road);
   return blob;
 }
 
@@ -320,6 +342,7 @@ function mergeGuest(cloud, local) {
   out.profile = mergeProfile(cloud.profile, local.profile);
   out.portrait = (local.portrait && local.portrait.cardId) ? local.portrait : (cloud.portrait || local.portrait);
   out.mailClaimed = { ...(cloud.mailClaimed || {}), ...(local.mailClaimed || {}) };
+  out.road = mergeRoad(cloud.road, local.road) || undefined;
   if (!out.social) out.social = local.social || cloud.social;
   return sanitizeBlob(out);
 }

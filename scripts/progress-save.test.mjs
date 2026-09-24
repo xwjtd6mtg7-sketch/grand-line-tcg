@@ -54,4 +54,16 @@ const dirty = sanitizeBlob({
 assert.equal(dirty.tcg.state.berries, 0);
 assert.equal(dirty.tcg.state.collection.x, 99);
 
+const cloudRoad = sanitizeBlob({
+  tcg: { version: 4, state: { berries: 400, granted: true } },
+  road: { points: 200, highestPoints: 200, claimed: { foosha_berries: true }, introSeen: true },
+});
+const guestNoRoad = sanitizeBlob({
+  tcg: { version: 4, state: { berries: 500, granted: true } },
+});
+const kept = mergeGuest(cloudRoad, guestNoRoad);
+assert.equal(kept.road.claimed.foosha_berries, true, "keeps claimed road rewards");
+assert.equal(kept.road.points, 200, "keeps road points on the account");
+assert.equal(kept.tcg.state.berries, 500);
+
 console.log("progress-save ok");

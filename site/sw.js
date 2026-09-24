@@ -1,5 +1,5 @@
 const ASSETS = "gl-tcg-assets";
-const SHELL = "gl-tcg-shell-v13";
+const SHELL = "gl-tcg-shell-v14";
 const ASSET_RE = /^\/(cards-fr|cards|boosters|cosmetics|combat|don|audio|playmat|social)\//;
 const ASSET_FILE = /^\/(card-back|logo-|favicon|icon-|apple-touch|don\.jpg)/i;
 

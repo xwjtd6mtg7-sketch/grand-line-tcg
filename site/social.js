@@ -121,10 +121,10 @@
     var link = document.createElement("link");
     link.id = "gl-social-css";
     link.rel = "stylesheet";
-    link.href = "/social.css?v=32";
+    link.href = "/social.css?v=34";
     document.head.appendChild(link);
   } else {
-    document.getElementById("gl-social-css").href = "/social.css?v=32";
+    document.getElementById("gl-social-css").href = "/social.css?v=34";
   }
   try {
     if (!document.querySelector('link[rel="preload"][href*="/social/hero.jpg"]')) {
@@ -877,20 +877,25 @@
     var meId = session.me && session.me.id;
     var mine = (session.trades || []).filter(function (t) { return t.fromId === meId; });
     var theirs = (session.trades || []).filter(function (t) { return t.toId === meId; });
+    var intro =
+      '<div class="gl-so-icon-lg">' + ICO.trade + "</div>" +
+      '<div class="gl-so-info">' +
+        "Propose une de tes cartes contre une carte d’un ami. L’échange se conclut quand les deux pirates acceptent." +
+      "</div>" +
+      '<button type="button" class="gl-so-cta" data-act="trade-go">Échanger</button>';
+    var empty = !mine.length && !theirs.length;
+    var lists =
+      (theirs.length ? '<div class="gl-so-add-title">Demandes reçues</div>' + transferRows(theirs, true) : "") +
+      (mine.length ? '<div class="gl-so-add-title">En attente</div>' + transferRows(mine, false) : "");
     return (
-      '<div class="gl-so-page has-float">' +
+      '<div class="gl-so-page has-float' + (empty ? " is-center" : "") + '">' +
         header("Social", "Échange") +
-        '<div class="gl-so-scroll" style="padding:12px 14px 90px">' +
-          '<div class="gl-so-stage" style="padding-top:8px">' +
-            '<div class="gl-so-icon-lg">' + ICO.trade + "</div>" +
-            '<div class="gl-so-info">' +
-              "Propose une de tes cartes contre une carte d’un ami. L’échange se conclut quand les deux pirates acceptent." +
-            "</div>" +
-            '<button type="button" class="gl-so-cta" data-act="trade-go">Échanger</button>' +
-          "</div>" +
-          (theirs.length ? '<div class="gl-so-add-title">Demandes reçues</div>' + transferRows(theirs, true) : '<p class="gl-so-empty" style="margin-top:18px">Aucune demande reçue pour le moment.</p>') +
-          (mine.length ? '<div class="gl-so-add-title">En attente</div>' + transferRows(mine, false) : "") +
-        "</div>" +
+        (empty
+          ? '<div class="gl-so-stage">' + intro + "</div>"
+          : '<div class="gl-so-scroll" style="padding:12px 14px 90px">' +
+              '<div class="gl-so-stage" style="flex:none;justify-content:flex-start;padding-top:18px">' + intro + "</div>" +
+              lists +
+            "</div>") +
         backBar('<button type="button" class="gl-so-retour is-ghost" data-act="history">Historique</button>') +
       "</div>"
     );

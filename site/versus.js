@@ -33,15 +33,21 @@
   var hereT = 0;
   var kickoffShown = false;
   var soloLaunching = false;
+  var roadGate = false;
+  var roadSeek = 0;
+  var roadWaitSince = 0;
+  var roadBotSent = false;
+  var roadHubSynced = false;
+  var roadClockTimer = 0;
 
   if (!document.getElementById("gl-versus-css")) {
     var link = document.createElement("link");
     link.id = "gl-versus-css";
     link.rel = "stylesheet";
-    link.href = "/versus.css?v=40";
+    link.href = "/versus.css?v=49";
     document.head.appendChild(link);
   } else {
-    document.getElementById("gl-versus-css").href = "/versus.css?v=40";
+    document.getElementById("gl-versus-css").href = "/versus.css?v=49";
   }
 
   var ICO = {
@@ -324,6 +330,17 @@
     });
   }
 
+  var shownRoad = false;
+
+  function closeRoadBrief() {
+    var el = document.querySelector("#gl-vs-portal .gl-road-brief .dossier-sheet");
+    slideOut(el, function () {
+      shownRoad = false;
+      if (window.GLRoad && window.GLRoad.closeBrief) window.GLRoad.closeBrief();
+      paint();
+    });
+  }
+
   function closeDecksAnim() {
     var dEl = document.querySelector("#gl-vs-portal .gl-vs-decks .dossier-sheet");
     slideOut(dEl, function () {
@@ -359,19 +376,52 @@
         '</h2></div><div class="gl-rule"></div></div>'
     );
   }
+  function roadWaitLeft() {
+    var start = roadWaitSince || Date.now();
+    return Math.max(0, Math.ceil((45000 - (Date.now() - start)) / 1000));
+  }
+
+  function roadWaitBar() {
+    return (
+      '<div class="cmb-float road-wait-bar">' +
+        '<span class="cmb-deck-btn is-ghost" aria-hidden="true"></span>' +
+        '<button type="button" class="cmb-back" data-act="cancel" aria-label="Annuler">×</button>' +
+        '<span class="cmb-deck-btn is-ghost" aria-hidden="true"></span>' +
+      "</div>"
+    );
+  }
+
+  function armRoadClock() {
+    clearInterval(roadClockTimer);
+    roadClockTimer = 0;
+    if (view !== "wait" || !room || room.mode !== "road") return;
+    roadClockTimer = setInterval(function () {
+      var el = document.getElementById("gl-road-wait");
+      if (!el || view !== "wait") {
+        clearInterval(roadClockTimer);
+        roadClockTimer = 0;
+        return;
+      }
+      el.textContent = String(roadWaitLeft());
+    }, 250);
+  }
+
   function backBar(opts) {
     opts = opts || {};
     var leftAct = opts.leftAct || "decks";
     var leftLabel = opts.leftLabel || "Decks";
     var leftIco = opts.leftIco || ICO.decks;
     var backAct = opts.backAct || "back";
+    var right = opts.sail
+      ? '<button type="button" class="road-sail" data-act="road-sail">Prendre la mer</button>'
+      : '<span class="cmb-deck-btn is-ghost" aria-hidden="true"></span>';
     return (
-      '<div class="cmb-float">' +
+      '<div class="cmb-float' + (opts.sail ? " road-float" : "") + '">' +
         '<button type="button" class="cmb-deck-btn" data-act="' + leftAct + '">' +
           leftIco + "<span>" + leftLabel + "</span></button>" +
         '<button type="button" class="cmb-back" data-act="' + backAct + '" aria-label="Retour">' +
           ICO.back + "</button>" +
-        '<span class="cmb-deck-btn is-ghost" aria-hidden="true"></span>' +
+        right +
       "</div>"
     );
   }
@@ -1054,6 +1104,9 @@
       kickoffDone: false,
       winner: (v && (v.winner === 0 || v.winner === 1)) ? (v.winner | 0) : null,
       _roomId: j.id,
+      bot: !!(j.bot || (v && v.bot)),
+      oppName: (j.you === "guest" ? (j.host && j.host.name) : (j.guest && j.guest.name)) || (v && v.guestName) || "",
+      oppRedraw: (j.bot || (v && v.bot)) ? false : null,
       send: function (act, clockSide) {
         if (!room || !act) return;
         var side;
@@ -1081,7 +1134,21 @@
         if (typeof applyFn === "function") applyFn(act);
         else pending.push(act);
       },
-      onOver: function () {},
+      onOver: function (won) {
+        if (!net.bot || net._overSent) return;
+        net._overSent = true;
+        var winner = won ? net.pid : (net.pid ^ 1);
+        api({ action: "move", id: j.id, move: { type: "result", winner: winner } })
+          .then(function (res) {
+            net._overRoom = res;
+            if (net._exitPending) {
+              net._exitPending = false;
+              endSoloFight();
+              showMatchOver(res);
+            }
+          })
+          .catch(function () { net._overSent = false; });
+      },
       onError: function (msg) {
         net.error = msg || "Le combat n’a pas pu démarrer.";
         soloLive = false;
@@ -1092,7 +1159,15 @@
         if (el) el.hidden = false;
         if (openVs) paint();
       },
-      exit: function () { endSoloFight(); }
+      exit: function () {
+        if (net.bot && net._overSent && !net._overRoom) {
+          net._exitPending = true;
+          return;
+        }
+        var over = net.bot ? net._overRoom : null;
+        endSoloFight();
+        if (over) showMatchOver(over);
+      }
     };
     Object.defineProperty(net, "apply", {
       configurable: true,
@@ -1133,6 +1208,11 @@
 
   function tick() {
     if (!room || !room.id) return;
+    if (room.mode === "road" && room.status === "wait" && view === "wait") {
+      roadSeek += 1;
+      if (roadSeek % 3 === 0) seekRoad();
+      maybeRoadBot();
+    }
     getRoom(room.id).then(function (j) {
       if (!j || j.error) return;
       var prevStatus = room && room.status;
@@ -1168,6 +1248,17 @@
       room = j;
       lastVer = ver;
       if ((enteringPlay || j.status === "play") && isSoloView(j.view)) {
+        if (j.mode === "road" && !roadGate) {
+          roadGate = true;
+          view = "road-vs";
+          room = j;
+          if (openVs) paint();
+          setTimeout(function () {
+            if (!room || room.id !== j.id) return;
+            launchSoloFight(room);
+          }, 1500);
+          return;
+        }
         launchSoloFight(j);
         if (openVs && !soloLive) paint();
         return;
@@ -1243,14 +1334,30 @@
               '<span class="cmb-tile-label">Match classé</span><em class="nav-soon">Soon</em></button>' +
             '<button type="button" class="cmb-tile" data-act="private">' +
               '<span class="cmb-tile-label">Match privé</span></button>' +
-            '<button type="button" class="cmb-tile" disabled data-act="soon">' +
-              '<span class="cmb-tile-label">Match aléatoire</span><em class="nav-soon">Soon</em></button>' +
+            '<button type="button" class="cmb-tile" data-act="road">' +
+              '<span class="cmb-tile-label">Road to One Piece</span>' +
+              '<small class="road-tile-sub">' + (window.GLRoad ? esc(window.GLRoad.line()) : "Prendre la mer") + "</small></button>" +
           "</div>" +
           backBar() +
         "</div>" +
       "</main>"
     );
   }
+
+  window.GLVsDeckSnap = function () {
+    var d = activeDeck();
+    if (!d) return null;
+    var leader = cardOf(d.leaderId);
+    var set = setOfDeck(d, leader);
+    return {
+      name: d.name || "Deck",
+      count: deckCount(d),
+      pack: packSrc(set),
+      back: skinOf(d, "back"),
+      don: skinOf(d, "don"),
+      mat: skinOf(d, "mat"),
+    };
+  };
 
   function deckCardHtml() {
     var d = activeDeck();
@@ -1401,7 +1508,55 @@
     );
   }
 
+  function compassSvg() {
+    var ticks = "";
+    var i;
+    for (i = 0; i < 72; i++) {
+      var major = i % 6 === 0;
+      var a = i * 5 * Math.PI / 180;
+      var r1 = major ? 40 : 45;
+      var r2 = 52;
+      ticks +=
+        '<line x1="' + (60 + Math.cos(a) * r1).toFixed(1) + '" y1="' + (60 + Math.sin(a) * r1).toFixed(1) +
+        '" x2="' + (60 + Math.cos(a) * r2).toFixed(1) + '" y2="' + (60 + Math.sin(a) * r2).toFixed(1) +
+        '" stroke="' + (major ? "#f3dc96" : "#e7c56a55") + '" stroke-width="' + (major ? "1.5" : "0.7") + '"/>';
+    }
+    return (
+      '<div class="road-seek-compass" aria-hidden="true">' +
+        '<svg class="road-seek-dial" viewBox="0 0 120 120">' +
+          ticks +
+          '<circle cx="60" cy="60" r="56" fill="none" stroke="#e7c56a" stroke-width="1.2"/>' +
+          '<circle cx="60" cy="60" r="32" fill="#101820" stroke="#e7c56a99" stroke-width="1"/>' +
+        "</svg>" +
+        '<svg class="road-seek-needle" viewBox="0 0 120 120">' +
+          '<polygon points="60,16 66,62 60,54 54,62" fill="#f6e3a6"/>' +
+          '<polygon points="60,104 54,62 60,70 66,62" fill="#6d5824"/>' +
+          '<circle cx="60" cy="60" r="4.2" fill="#f6e3a6"/>' +
+        "</svg>" +
+      "</div>"
+    );
+  }
+
+  function renderRoadSeek() {
+    var marks = window.GLRoad ? window.GLRoad.waitExtra() : "";
+    var hud = window.GLRoad && window.GLRoad.hud ? window.GLRoad.hud() : "";
+    return (
+      '<div class="gl-vs-page gl-road-seek">' +
+        '<div class="road-seek-top">' + hud + "</div>" +
+        '<div class="road-seek">' +
+          marks +
+          '<p class="road-seek-kicker">Log Pose</p>' +
+          "<h3>Recherche d’un adversaire</h3>" +
+          compassSvg() +
+          '<p class="road-seek-sub">S’il n’y a personne, un pirate prend la mer.</p>' +
+        "</div>" +
+        roadWaitBar() +
+      "</div>"
+    );
+  }
+
   function renderWait() {
+    if (room && room.mode === "road") return renderRoadSeek();
     var isQr = room && room.mode === "qr";
     var code = (room && room.id) || "";
     return (
@@ -1749,6 +1904,8 @@
     var el = mountRoot();
     var html = "";
     if (view === "hub") html = renderHub();
+    else if (view === "road") html = '<main class="cmb-page road-page">' + (window.GLRoad ? window.GLRoad.page() : "") + "</main>";
+    else if (view === "road-vs") html = '<main class="cmb-page road-page road-page-depart">' + (window.GLRoad ? window.GLRoad.splash() : "") + "</main>";
     else if (view === "login") html = renderLogin();
     else if (view === "private") html = renderHub();
     else if (view === "wait") html = renderWait();
@@ -1767,6 +1924,7 @@
     var overlays = "";
     if (view === "private") overlays += renderPrivate();
     if (sheet === "decks") overlays += deckSheet();
+    if (view === "road" && window.GLRoad && window.GLRoad.sheetHtml) overlays += window.GLRoad.sheetHtml();
     var portal = portalEl();
     portal.innerHTML = overlays;
     portal.hidden = !overlays;
@@ -1782,10 +1940,27 @@
       else restSheet(decksEl);
       bindGrab(decksEl, closeDecksAnim);
     }
+    var roadSheet = portal.querySelector(".gl-road-brief .dossier-sheet");
+    if (roadSheet) {
+      var roadH = parseInt(roadSheet.style.height, 10) || sheetHeight();
+      if (!shownRoad) slideIn(roadSheet, roadH);
+      else restSheet(roadSheet);
+      bindGrab(roadSheet, closeRoadBrief);
+    }
     shownPrep = !!prep;
     shownDecks = !!decksEl;
+    shownRoad = !!roadSheet;
+    if (view === "road" && window.GLRoad) window.GLRoad.afterPaint(el);
+    armRoadClock();
+    if (view === "hub" && window.GLRoad && !roadHubSynced) {
+      roadHubSynced = true;
+      window.GLRoad.refresh().then(function () { if (view === "hub" && openVs) paint(); });
+    }
     var priv = view === "private" || view === "wait" || view === "scan" || view === "login" || sheet === "decks";
     document.documentElement.classList.toggle("gl-versus-priv", !!priv);
+    document.documentElement.classList.toggle("gl-road-on", view === "road");
+    document.documentElement.classList.toggle("gl-road-seek", view === "wait" && !!(room && room.mode === "road"));
+    document.documentElement.classList.toggle("gl-road-depart", view === "road-vs");
     if (view === "scan") {
       startCamera();
       var jin = el.querySelector("#gl-vs-join-in");
@@ -1812,6 +1987,76 @@
       return null;
     }
     return d;
+  }
+
+  function roomWaited(j) {
+    var t = j && j.createdAt ? Date.parse(j.createdAt) : NaN;
+    if (!t || isNaN(t)) return 0;
+    return Math.max(0, Date.now() - t);
+  }
+
+  function maybeRoadBot() {
+    if (roadBotSent || !room || room.mode !== "road" || room.status !== "wait" || view !== "wait") return;
+    if (!roadWaitSince) roadWaitSince = Date.now() - roomWaited(room);
+    if (Date.now() - roadWaitSince < 45000) return;
+    roadBotSent = true;
+    var waitedId = room.id;
+    fetch("/api/versus", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "bot", id: waitedId }),
+    }).then(function (r) {
+      return r.json().then(function (body) { return { ok: r.ok, body: body }; });
+    }).then(function (res) {
+      var body = res.body || {};
+      if (!room || room.id !== waitedId || room.status !== "wait") return;
+      if (!res.ok || body.error || body.status !== "play") {
+        roadBotSent = false;
+        return;
+      }
+      room = body;
+      lastVer = -1;
+      tick();
+    }).catch(function () { roadBotSent = false; });
+  }
+
+  function seekRoad() {
+    var d = needDeck();
+    if (!d || !room || room.mode !== "road" || room.status !== "wait") return;
+    api({ action: "queue", deck: d }).then(function (j) {
+      if (!j || !j.id) return;
+      room = j;
+      if (j.status === "play") {
+        lastVer = -1;
+        tick();
+      }
+    }).catch(function () {});
+  }
+
+  function goRoad() {
+    var d = needDeck();
+    if (!d) return;
+    if (window.GLRoad && window.GLRoad.closeBrief) window.GLRoad.closeBrief();
+    checkAuth().then(function (ok) {
+      if (!ok) { view = "login"; paint(); return; }
+      roadGate = false;
+      roadSeek = 0;
+      roadBotSent = false;
+      api({ action: "queue", deck: d }).then(function (j) {
+        room = j;
+        roadWaitSince = Date.now() - roomWaited(j);
+        if (j.status === "play") {
+          view = "wait";
+          startPoll();
+          tick();
+          return;
+        }
+        view = "wait";
+        startPoll();
+        paint();
+      }).catch(function (e) { toast(e.message); });
+    });
   }
 
   function goPassword() {
@@ -2063,6 +2308,40 @@
       });
       return;
     }
+    if (act === "road") {
+      checkAuth().then(function (ok) {
+        if (!ok) { view = "login"; paint(); return; }
+        view = "road";
+        if (window.GLRoad) window.GLRoad.refresh().then(function () { if (view === "road") paint(); });
+        paint();
+      });
+      return;
+    }
+    if (act === "road-intro") {
+      if (window.GLRoad) window.GLRoad.intro().then(function () { paint(); }).catch(function (e) { toast(e.message); });
+      return;
+    }
+    if (act === "road-claim") {
+      var rid = btn.getAttribute("data-id");
+      if (window.GLRoad && rid) {
+        window.GLRoad.claim(rid).then(function (j) {
+          if (j && j.berries != null) toast("+" + (j.reward && j.reward.amount || "") + " Berries");
+          paint();
+        }).catch(function (e) { toast(e.message); });
+      }
+      return;
+    }
+    if (act === "road-brief-close") { closeRoadBrief(); return; }
+    if (act === "road-sail") {
+      if (view === "road" && window.GLRoad && window.GLRoad.openBrief) {
+        window.GLRoad.openBrief();
+        paint();
+        return;
+      }
+      goRoad();
+      return;
+    }
+    if (act === "road-launch") { goRoad(); return; }
     if (act === "sheet-off") {
       if (sheet === "decks") { closeDecksAnim(); return; }
       sheet = null;
@@ -2138,11 +2417,15 @@
       return;
     }
     if (act === "cancel") {
+      var backToRoad = !!(room && room.mode === "road" && !soloLive);
       stopPoll();
       if (room) api({ action: "cancel", id: room.id }).catch(function () {});
       room = null;
-      view = "private";
-      document.documentElement.classList.remove("gl-versus-fight");
+      roadGate = false;
+      roadBotSent = false;
+      roadWaitSince = 0;
+      view = backToRoad ? "road" : "private";
+      document.documentElement.classList.remove("gl-versus-fight", "gl-versus-solo");
       paint();
       return;
     }
@@ -2228,7 +2511,7 @@
     window.__glVsNet = null;
     clearKickoff();
     kickoffShown = false;
-    document.documentElement.classList.remove("gl-versus-on", "gl-versus-fight", "gl-versus-priv", "gl-versus-solo", "gl-bgm-solo", "gl-bgm-pvp");
+    document.documentElement.classList.remove("gl-versus-on", "gl-versus-fight", "gl-versus-priv", "gl-versus-solo", "gl-bgm-solo", "gl-bgm-pvp", "gl-road-on", "gl-road-seek", "gl-road-depart");
     var el = document.getElementById("gl-vs-root");
     if (el) el.hidden = true;
     var p = document.getElementById("gl-vs-portal");
@@ -2373,7 +2656,7 @@
     hideAwayOverlay();
     clearKickoff();
     kickoffShown = false;
-    document.documentElement.classList.remove("gl-versus-fight", "gl-versus-solo", "gl-versus-on", "gl-versus-priv", "gl-bgm-solo", "gl-bgm-pvp");
+    document.documentElement.classList.remove("gl-versus-fight", "gl-versus-solo", "gl-versus-on", "gl-versus-priv", "gl-bgm-solo", "gl-bgm-pvp", "gl-road-seek", "gl-road-depart");
     var root = document.getElementById("gl-vs-root");
     if (root) root.hidden = true;
     var portal = document.getElementById("gl-vs-portal");
@@ -2411,10 +2694,30 @@
       hideResumePrompt();
       return;
     }
+    var wasRoad = j.mode === "road" || (room && room.mode === "road");
+    if (wasRoad) j.mode = "road";
     room = j;
     var expired = isExpiredRoom(j) || !!opts.expired;
     var win = !opts.asLoss && !expired && iWonRoom(j);
     if (!expired) scoreOnce(j);
+    if (wasRoad && window.GLRoad && j.id) {
+      var roadRoom = j;
+      window.GLRoad.settle(j.id).then(function (html) {
+        resumeCard(html, function (e) {
+          if (e.target.closest("[data-over='road']") || e.target === e.currentTarget) {
+            hideResumePrompt();
+            resultLocked = false;
+            markOver(roadRoom.id);
+            clearResume();
+            room = null;
+            roadGate = false;
+            enterAppIfNeeded();
+            openVersus("road");
+          }
+        });
+      });
+      return;
+    }
     var why = (j.view && j.view.endedBy) || (opts.asLoss ? "concede" : "");
     var title;
     var copy;
@@ -2656,5 +2959,6 @@
       soloLive = prev;
     },
     promptResume: showResumePrompt,
+    repaint: function () { if (openVs) paint(); },
   };
 })();
